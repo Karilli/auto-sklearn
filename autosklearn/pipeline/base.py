@@ -4,7 +4,7 @@ from typing import Dict, Optional, Union
 import numpy as np
 import scipy.sparse
 from ConfigSpace import Configuration
-from sklearn.pipeline import Pipeline
+from autosklearn.sklearn_fixes.pipeline import Pipeline
 
 import autosklearn.pipeline.create_searchspace_util
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -44,13 +44,10 @@ class BasePipeline(Pipeline):
         random_state=None,
         init_params=None,
     ):
-
         self.init_params = init_params if init_params is not None else {}
         self.include = include if include is not None else {}
         self.exclude = exclude if exclude is not None else {}
-        self.dataset_properties = (
-            dataset_properties if dataset_properties is not None else {}
-        )
+        self.dataset_properties = dataset_properties if dataset_properties is not None else {}
         self.random_state = random_state
         self.feat_type = feat_type
 
@@ -87,9 +84,7 @@ class BasePipeline(Pipeline):
                 )
             self.config = config
 
-        self.set_hyperparameters(
-            self.config, feat_type=feat_type, init_params=init_params
-        )
+        self.set_hyperparameters(self.config, feat_type=feat_type, init_params=init_params)
 
         super().__init__(steps=self.steps)
 
@@ -121,7 +116,14 @@ class BasePipeline(Pipeline):
             NoModelException is raised if fit() is called without specifying
             a classification algorithm first.
         """
-        X, fit_params = self.fit_transformer(X, y, **fit_params)
+        with open("log", "a") as f:
+            f.write(f"{self}\n")
+
+        res = self.fit_transformer(X, y, **fit_params)
+        if len(res) == 2:
+            X, fit_params = res
+        else:
+            X, y, fit_params = res
         self.fit_estimator(X, y, **fit_params)
         return self
 
@@ -129,17 +131,13 @@ class BasePipeline(Pipeline):
         self.num_targets = 1 if len(y.shape) == 1 else y.shape[1]
         if fit_params is None:
             fit_params = {}
-        fit_params = {
-            key.replace(":", "__"): value for key, value in fit_params.items()
-        }
+        fit_params = {key.replace(":", "__"): value for key, value in fit_params.items()}
         fit_params_steps = self._check_fit_params(**fit_params)
-        Xt = self._fit(X, y, **fit_params_steps)
-        return Xt, fit_params_steps[self.steps[-1][0]]
+        Xt, yt = self._fit(X, y, **fit_params_steps)
+        return Xt, yt, fit_params_steps[self.steps[-1][0]]
 
     def fit_estimator(self, X, y, **fit_params):
-        fit_params = {
-            key.replace(":", "__"): value for key, value in fit_params.items()
-        }
+        fit_params = {key.replace(":", "__"): value for key, value in fit_params.items()}
         self._final_estimator.fit(X, y, **fit_params)
         return self
 
@@ -183,8 +181,7 @@ class BasePipeline(Pipeline):
         else:
             if not isinstance(batch_size, int):
                 raise ValueError(
-                    "Argument 'batch_size' must be of type int, "
-                    "but is '%s'" % type(batch_size)
+                    "Argument 'batch_size' must be of type int, " "but is '%s'" % type(batch_size)
                 )
             if batch_size <= 0:
                 raise ValueError(
@@ -195,17 +192,13 @@ class BasePipeline(Pipeline):
                 if self.num_targets == 1:
                     y = np.zeros((X.shape[0],), dtype=self._output_dtype)
                 else:
-                    y = np.zeros(
-                        (X.shape[0], self.num_targets), dtype=self._output_dtype
-                    )
+                    y = np.zeros((X.shape[0], self.num_targets), dtype=self._output_dtype)
 
                 # Copied and adapted from the scikit-learn GP code
                 for k in range(max(1, int(np.ceil(float(X.shape[0]) / batch_size)))):
                     batch_from = k * batch_size
                     batch_to = min([(k + 1) * batch_size, X.shape[0]])
-                    y[batch_from:batch_to] = self.predict(
-                        X[batch_from:batch_to], batch_size=None
-                    )
+                    y[batch_from:batch_to] = self.predict(X[batch_from:batch_to], batch_size=None)
 
                 return y
 
@@ -230,9 +223,7 @@ class BasePipeline(Pipeline):
                     new_name = param.replace("%s:" % node_name, "", 1)
                     sub_config_dict[new_name] = value
 
-            sub_configuration = Configuration(
-                sub_configuration_space, values=sub_config_dict
-            )
+            sub_configuration = Configuration(sub_configuration_space, values=sub_config_dict)
 
             if init_params is not None:
                 sub_init_params_dict = {}
@@ -244,9 +235,7 @@ class BasePipeline(Pipeline):
             else:
                 sub_init_params_dict = None
 
-            if isinstance(
-                node, (AutoSklearnChoice, AutoSklearnComponent, BasePipeline)
-            ):
+            if isinstance(node, (AutoSklearnChoice, AutoSklearnComponent, BasePipeline)):
                 node.set_hyperparameters(
                     feat_type=feat_type,
                     configuration=sub_configuration,
@@ -348,9 +337,7 @@ class BasePipeline(Pipeline):
         keys = [pair[0] for pair in pipeline]
         for key in include:
             if key not in keys:
-                raise ValueError(
-                    "Invalid key in include: %s; should be one " "of %s" % (key, keys)
-                )
+                raise ValueError("Invalid key in include: %s; should be one " "of %s" % (key, keys))
 
         if exclude is None:
             if self.exclude is None:
@@ -361,9 +348,7 @@ class BasePipeline(Pipeline):
         keys = [pair[0] for pair in pipeline]
         for key in exclude:
             if key not in keys:
-                raise ValueError(
-                    "Invalid key in exclude: %s; should be one " "of %s" % (key, keys)
-                )
+                raise ValueError("Invalid key in exclude: %s; should be one " "of %s" % (key, keys))
 
         if "sparse" not in dataset_properties:
             # This dataset is probably dense
@@ -383,9 +368,7 @@ class BasePipeline(Pipeline):
         # Simple sanity checks
         assert np.sum(matches) != 0, "No valid pipeline found."
 
-        assert np.sum(matches) <= np.size(
-            matches
-        ), "'matches' is not binary; %s <= %d, %s" % (
+        assert np.sum(matches) <= np.size(matches), "'matches' is not binary; %s <= %d, %s" % (
             str(np.sum(matches)),
             np.size(matches),
             str(matches.shape),
@@ -410,15 +393,13 @@ class BasePipeline(Pipeline):
             # If the node is a choice, we have to figure out which of its
             #  choices are actually legal choices
             else:
-                choices_list = (
-                    autosklearn.pipeline.create_searchspace_util.find_active_choices(
-                        matches,
-                        node,
-                        node_idx,
-                        dataset_properties,
-                        include.get(node_name),
-                        exclude.get(node_name),
-                    )
+                choices_list = autosklearn.pipeline.create_searchspace_util.find_active_choices(
+                    matches,
+                    node,
+                    node_idx,
+                    dataset_properties,
+                    include.get(node_name),
+                    exclude.get(node_name),
                 )
                 sub_config_space = node.get_hyperparameter_search_space(
                     feat_type=feat_type,
@@ -455,7 +436,6 @@ class BasePipeline(Pipeline):
         init_params.pop("instance", None)
 
         for key, value in init_params.items():
-
             if ":" not in key:
                 raise ValueError(
                     "Unsupported argument to init_params {}."
@@ -466,9 +446,7 @@ class BasePipeline(Pipeline):
             if node_name not in self.named_steps.keys():
                 raise ValueError(
                     "The current node name specified via key={} of init_params "
-                    "is not valid. Valid node names are {}".format(
-                        key, self.named_steps.keys()
-                    )
+                    "is not valid. Valid node names are {}".format(key, self.named_steps.keys())
                 )
                 continue
             variable_name = key.split(":")[-1]
@@ -476,9 +454,7 @@ class BasePipeline(Pipeline):
             if isinstance(node, BasePipeline):
                 # If dealing with a sub pipe,
                 # Call the child _check_init_params_honored with the updated config
-                node._check_init_params_honored(
-                    {key.replace("%s:" % node_name, "", 1): value}
-                )
+                node._check_init_params_honored({key.replace("%s:" % node_name, "", 1): value})
                 continue
 
             if isinstance(node, AutoSklearnComponent):
@@ -490,8 +466,7 @@ class BasePipeline(Pipeline):
 
             if variable_name not in node_dict or node_dict[variable_name] != value:
                 raise ValueError(
-                    "Cannot properly set the pair {}->{} via init_params"
-                    "".format(key, value)
+                    "Cannot properly set the pair {}->{} via init_params" "".format(key, value)
                 )
 
     def __repr__(self):
@@ -542,9 +517,7 @@ class BasePipeline(Pipeline):
 
         return return_value
 
-    def _get_pipeline_steps(
-        self, dataset_properties, feat_type: Optional[FEAT_TYPE_TYPE] = None
-    ):
+    def _get_pipeline_steps(self, dataset_properties, feat_type: Optional[FEAT_TYPE_TYPE] = None):
         raise NotImplementedError()
 
     def _get_estimator_hyperparameter_name(self):
@@ -563,15 +536,11 @@ class BasePipeline(Pipeline):
             for key in self.include.keys():
                 if key in self.exclude.keys():
                     raise ValueError(
-                        "Cannot specify include and exclude for same step '{}'.".format(
-                            key
-                        )
+                        "Cannot specify include and exclude for same step '{}'.".format(key)
                     )
 
         supported_steps = {
-            step[0]: step[1]
-            for step in self.steps
-            if isinstance(step[1], AutoSklearnChoice)
+            step[0]: step[1] for step in self.steps if isinstance(step[1], AutoSklearnChoice)
         }
         for arg in ["include", "exclude"]:
             argument = getattr(self, arg)
@@ -587,21 +556,15 @@ class BasePipeline(Pipeline):
                     )
 
                 candidate_components = argument[key]
-                if not (
-                    isinstance(candidate_components, list) and candidate_components
-                ):
+                if not (isinstance(candidate_components, list) and candidate_components):
                     raise ValueError(
                         "The provided value of the key '{}' in the '{}' argument is "
-                        "not valid. The value must be a non-empty list.".format(
-                            key, arg
-                        )
+                        "not valid. The value must be a non-empty list.".format(key, arg)
                     )
 
                 available_components = list(
                     supported_steps[key]
-                    .get_available_components(
-                        dataset_properties=self.dataset_properties
-                    )
+                    .get_available_components(dataset_properties=self.dataset_properties)
                     .keys()
                 )
                 for component in candidate_components:

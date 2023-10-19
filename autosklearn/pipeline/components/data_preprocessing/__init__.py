@@ -45,18 +45,14 @@ class DataPreprocessorChoice(AutoSklearnChoice):
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together."
-            )
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError(
-                        "Trying to include unknown component: " "%s" % incl
-                    )
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         # TODO check for task type classification and/or regression!
 
@@ -149,6 +145,9 @@ class DataPreprocessorChoice(AutoSklearnChoice):
         return cs
 
     def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
+        from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import Balancing
+
+        assert not isinstance(self.choice, Balancing)
         return self.choice.transform(X)
 
     def set_hyperparameters(

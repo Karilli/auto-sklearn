@@ -395,9 +395,7 @@ class ClassProbabilityMean(MetaFeature):
         if len(y.shape) == 2:
             occurences = []
             for i in range(y.shape[1]):
-                occurences.extend(
-                    [occurrence for occurrence in occurence_dict[i].values()]
-                )
+                occurences.extend([occurrence for occurrence in occurence_dict[i].values()])
             occurences = np.array(occurences)
         else:
             occurences = np.array(
@@ -443,9 +441,7 @@ class NumSymbols(HelperFunction):
         for i in range(X.shape[1]):
             if categorical[X.columns[i] if hasattr(X, "columns") else i]:
                 column = X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]
-                unique_values = (
-                    column.unique() if hasattr(column, "unique") else np.unique(column)
-                )
+                unique_values = column.unique() if hasattr(column, "unique") else np.unique(column)
                 num_unique = np.sum(pd.notna(unique_values))
                 symbols_per_column.append(num_unique)
         return symbols_per_column
@@ -524,28 +520,22 @@ class SymbolsSum(MetaFeature):
 class Kurtosisses(HelperFunction):
     def _calculate(self, X, y, logger, feat_type):
         numerical = {
-            key: True if value.lower() == "numerical" else False
-            for key, value in feat_type.items()
+            key: True if value.lower() == "numerical" else False for key, value in feat_type.items()
         }
         kurts = []
         for i in range(X.shape[1]):
             if numerical[X.columns[i] if hasattr(X, "columns") else i]:
-                if np.isclose(
-                    np.var(X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]), 0
-                ):
+                if np.isclose(np.var(X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]), 0):
                     kurts.append(0)
                 else:
                     kurts.append(
-                        scipy.stats.kurtosis(
-                            X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]
-                        )
+                        scipy.stats.kurtosis(X.iloc[:, i] if hasattr(X, "iloc") else X[:, i])
                     )
         return kurts
 
     def _calculate_sparse(self, X, y, logger, feat_type):
         numerical = {
-            key: True if value.lower() == "numerical" else False
-            for key, value in feat_type.items()
+            key: True if value.lower() == "numerical" else False for key, value in feat_type.items()
         }
         kurts = []
         X_new = X.tocsc()
@@ -596,28 +586,20 @@ class KurtosisSTD(MetaFeature):
 class Skewnesses(HelperFunction):
     def _calculate(self, X, y, logger, feat_type):
         numerical = {
-            key: True if value.lower() == "numerical" else False
-            for key, value in feat_type.items()
+            key: True if value.lower() == "numerical" else False for key, value in feat_type.items()
         }
         skews = []
         for i in range(X.shape[1]):
             if numerical[X.columns[i] if hasattr(X, "columns") else i]:
-                if np.isclose(
-                    np.var(X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]), 0
-                ):
+                if np.isclose(np.var(X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]), 0):
                     skews.append(0)
                 else:
-                    skews.append(
-                        scipy.stats.skew(
-                            X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]
-                        )
-                    )
+                    skews.append(scipy.stats.skew(X.iloc[:, i] if hasattr(X, "iloc") else X[:, i]))
         return skews
 
     def _calculate_sparse(self, X, y, logger, feat_type):
         numerical = {
-            key: True if value.lower() == "numerical" else False
-            for key, value in feat_type.items()
+            key: True if value.lower() == "numerical" else False for key, value in feat_type.items()
         }
         skews = []
         X_new = X.tocsc()
@@ -688,9 +670,7 @@ class ClassEntropy(MetaFeature):
             for value in y if labels == 1 else y[:, i]:
                 occurence_dict[value] += 1
             entropies.append(
-                scipy.stats.entropy(
-                    [occurence_dict[key] for key in occurence_dict], base=2
-                )
+                scipy.stats.entropy([occurence_dict[key] for key in occurence_dict], base=2)
             )
 
         return np.mean(entropies)
@@ -1152,7 +1132,6 @@ def calculate_all_metafeatures(
     dont_calculate=None,
     densify_threshold=1000,
 ):
-
     """Calculate all metafeatures."""
     helper_functions.clear()
     metafeatures.clear()
@@ -1192,9 +1171,7 @@ def calculate_all_metafeatures(
                     force_sparse_output=True,
                 )
                 X_transformed = DPP.fit_transform(X)
-                feat_type_transformed = {
-                    i: "numerical" for i in range(X_transformed.shape[1])
-                }
+                feat_type_transformed = {i: "numerical" for i in range(X_transformed.shape[1])}
 
                 # Densify the transformed matrix
                 if not sparse and scipy.sparse.issparse(X_transformed):
@@ -1242,9 +1219,7 @@ def calculate_all_metafeatures(
                 continue
             elif is_helper_function and not helper_functions.is_calculated(dependency):
                 logger.info("%s: Going to calculate: %s", dataset_name, dependency)
-                value = helper_functions[dependency](
-                    X_, y_, feat_type=feat_type_, logger=logger
-                )
+                value = helper_functions[dependency](X_, y_, feat_type=feat_type_, logger=logger)
                 helper_functions.set_value(dependency, value)
                 mf_[dependency] = value
 

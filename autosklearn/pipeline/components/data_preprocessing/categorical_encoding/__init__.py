@@ -57,8 +57,7 @@ class OHEChoice(AutoSklearnChoice):
 
         if len(available_preprocessors) == 0:
             raise ValueError(
-                "No ohe hot encoders found, please add any one hot encoder "
-                "component."
+                "No ohe hot encoders found, please add any one hot encoder " "component."
             )
 
         if default is None:
@@ -121,4 +120,7 @@ class OHEChoice(AutoSklearnChoice):
         return self
 
     def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
+        from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import Balancing
+
+        assert not isinstance(self.choice, Balancing)
         return self.choice.transform(X)

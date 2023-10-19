@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import sparse
-from sklearn.base import BaseEstimator, TransformerMixin
+from autosklearn.sklearn_fixes.base import TransformerMixin
+from sklearn.base import BaseEstimator
 
 
 class MinorityCoalescer(BaseEstimator, TransformerMixin):
@@ -30,9 +31,7 @@ class MinorityCoalescer(BaseEstimator, TransformerMixin):
             if sparse.issparse(X):
                 indptr_start = X.indptr[column]
                 indptr_end = X.indptr[column + 1]
-                unique, counts = np.unique(
-                    X.data[indptr_start:indptr_end], return_counts=True
-                )
+                unique, counts = np.unique(X.data[indptr_start:indptr_end], return_counts=True)
                 colsize = indptr_end - indptr_start
             else:
                 unique, counts = np.unique(X[:, column], return_counts=True)

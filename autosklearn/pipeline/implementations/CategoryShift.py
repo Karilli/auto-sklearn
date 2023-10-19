@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import sparse
-from sklearn.base import BaseEstimator, TransformerMixin
+from autosklearn.sklearn_fixes.base import TransformerMixin
+from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 
 

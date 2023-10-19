@@ -210,7 +210,6 @@ class AbstractEvaluator(object):
         budget: Optional[float] = None,
         budget_type: Optional[str] = None,
     ):
-
         # Limit the number of threads that numpy uses
         threadpool_limits(limits=1)
 
@@ -245,17 +244,13 @@ class AbstractEvaluator(object):
             if not isinstance(self.configuration, Configuration):
                 self.model_class = MyDummyRegressor
             else:
-                self.model_class = (
-                    autosklearn.pipeline.regression.SimpleRegressionPipeline
-                )
+                self.model_class = autosklearn.pipeline.regression.SimpleRegressionPipeline
             self.predict_function = self._predict_regression
         else:
             if not isinstance(self.configuration, Configuration):
                 self.model_class = MyDummyClassifier
             else:
-                self.model_class = (
-                    autosklearn.pipeline.classification.SimpleClassificationPipeline
-                )
+                self.model_class = autosklearn.pipeline.classification.SimpleClassificationPipeline
             self.predict_function = self._predict_proba
 
         self._init_params = {"data_preprocessor:feat_type": self.datamanager.feat_type}
@@ -293,9 +288,7 @@ class AbstractEvaluator(object):
         # are only passed to the AbstractEvaluator via the TAE and are not there
         # yet because the worker is in its own process).
         for key in additional_components:
-            for component_name, component in additional_components[
-                key
-            ].components.items():
+            for component_name, component in additional_components[key].components.items():
                 if component_name not in _addons[key].components:
                     _addons[key].add_component(component)
 
@@ -467,8 +460,7 @@ class AbstractEvaluator(object):
                 {
                     "error": "Targets %s and prediction %s don't have "
                     "the same length. Probably training didn't "
-                    "finish"
-                    % (np.shape(self.Y_optimization), Y_optimization_pred.shape)
+                    "finish" % (np.shape(self.Y_optimization), Y_optimization_pred.shape)
                 },
             )
 
@@ -497,18 +489,13 @@ class AbstractEvaluator(object):
         # This file can be written independently of the others down bellow
         if "y_optimization" not in self.disable_file_output:
             if self.output_y_hat_optimization:
-                self.backend.save_additional_data(
-                    self.Y_optimization, what="targets_ensemble"
-                )
-                self.backend.save_additional_data(
-                    self.X_optimization, what="input_ensemble"
-                )
+                self.backend.save_additional_data(self.Y_optimization, what="targets_ensemble")
+                self.backend.save_additional_data(self.X_optimization, what="input_ensemble")
 
         models: Optional[BaseEstimator] = None
         if hasattr(self, "models"):
             if len(self.models) > 0 and self.models[0] is not None:
                 if "models" not in self.disable_file_output:
-
                     if self.task_type in CLASSIFICATION_TASKS:
                         models = VotingClassifier(
                             estimators=None,
@@ -528,13 +515,9 @@ class AbstractEvaluator(object):
             # TODO: below line needs to be deleted once backend is updated
             valid_predictions=None,
             ensemble_predictions=(
-                Y_optimization_pred
-                if "y_optimization" not in self.disable_file_output
-                else None
+                Y_optimization_pred if "y_optimization" not in self.disable_file_output else None
             ),
-            test_predictions=(
-                Y_test_pred if "y_test" not in self.disable_file_output else None
-            ),
+            test_predictions=(Y_test_pred if "y_test" not in self.disable_file_output else None),
         )
 
         return None, {}
@@ -554,9 +537,7 @@ class AbstractEvaluator(object):
             file: Optional[TextIO] = None,
             line: Optional[str] = None,
         ) -> None:
-            self.logger.debug(
-                "%s:%s: %s:%s" % (filename, lineno, str(category), message)
-            )
+            self.logger.debug("%s:%s: %s:%s" % (filename, lineno, str(category), message))
             return
 
         with warnings.catch_warnings():
@@ -584,9 +565,7 @@ class AbstractEvaluator(object):
             file: Optional[TextIO] = None,
             line: Optional[str] = None,
         ) -> None:
-            self.logger.debug(
-                "%s:%s: %s:%s" % (filename, lineno, str(category), message)
-            )
+            self.logger.debug("%s:%s: %s:%s" % (filename, lineno, str(category), message))
             return
 
         with warnings.catch_warnings():
@@ -603,10 +582,7 @@ class AbstractEvaluator(object):
     ) -> np.ndarray:
         num_classes = self.datamanager.info["label_num"]
 
-        if (
-            self.task_type == MULTICLASS_CLASSIFICATION
-            and prediction.shape[1] < num_classes
-        ):
+        if self.task_type == MULTICLASS_CLASSIFICATION and prediction.shape[1] < num_classes:
             if Y_train is None:
                 raise ValueError("Y_train must not be None!")
             classes = list(np.unique(Y_train))
@@ -616,9 +592,7 @@ class AbstractEvaluator(object):
                 if class_number in classes:
                     index = classes.index(class_number)
                     mapping[index] = class_number
-            new_predictions = np.zeros(
-                (prediction.shape[0], num_classes), dtype=np.float32
-            )
+            new_predictions = np.zeros((prediction.shape[0], num_classes), dtype=np.float32)
 
             for index in mapping:
                 class_index = mapping[index]

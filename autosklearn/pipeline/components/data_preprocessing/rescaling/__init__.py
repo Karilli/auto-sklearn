@@ -22,9 +22,7 @@ from ...base import (
 )
 
 rescaling_directory = os.path.split(__file__)[0]
-_rescalers = find_components(
-    __package__, rescaling_directory, AutoSklearnPreprocessingAlgorithm
-)
+_rescalers = find_components(__package__, rescaling_directory, AutoSklearnPreprocessingAlgorithm)
 additional_components = ThirdPartyComponents(AutoSklearnPreprocessingAlgorithm)
 _addons["data_preprocessing.rescaling"] = additional_components
 
@@ -91,4 +89,7 @@ class RescalingChoice(AutoSklearnChoice):
         return cs
 
     def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
+        from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import Balancing
+
+        assert not isinstance(self.choice, Balancing)
         return self.choice.transform(X)

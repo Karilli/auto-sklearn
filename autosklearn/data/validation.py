@@ -195,12 +195,18 @@ class InputValidator(BaseEstimator):
                 The transformed targets array
         """
         if not self._is_fitted:
-            raise NotFittedError(
-                "Cannot call transform on a validator that is not fitted"
-            )
+            raise NotFittedError("Cannot call transform on a validator that is not fitted")
 
+        from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import Balancing
+
+        assert not isinstance(self.feature_validator, Balancing)
         X_transformed = self.feature_validator.transform(X)
         if y is not None:
+            from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import (
+                Balancing,
+            )
+
+            assert not isinstance(self.target_validator, Balancing)
             y_transformed = self.target_validator.transform(y)
             return X_transformed, y_transformed
         else:

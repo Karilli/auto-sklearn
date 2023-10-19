@@ -47,7 +47,7 @@ from sklearn.model_selection._split import (
     BaseShuffleSplit,
     _RepeatedSplits,
 )
-from sklearn.pipeline import Pipeline
+from autosklearn.sklearn_fixes.pipeline import Pipeline
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_is_fitted
 from smac.callbacks import IncorporateRunResultCallback
@@ -298,9 +298,7 @@ class AutoML(BaseEstimator):
         self.precision = precision
         self.allow_string_features = allow_string_features
         self.disable_progress_bar = disable_progress_bar
-        self._initial_configurations_via_metalearning = (
-            initial_configurations_via_metalearning
-        )
+        self._initial_configurations_via_metalearning = initial_configurations_via_metalearning
         self._n_jobs = n_jobs
 
         self._scoring_functions = scoring_functions or []
@@ -611,9 +609,7 @@ class AutoML(BaseEstimator):
         if task is None:
             y_task = type_of_target(y)
             if not self._supports_task_type(y_task):
-                raise ValueError(
-                    f"{self.__class__.__name__} does not support" f" task {y_task}"
-                )
+                raise ValueError(f"{self.__class__.__name__} does not support" f" task {y_task}")
             self._task = self._task_type_id(y_task)
         else:
             self._task = task
@@ -680,10 +676,7 @@ class AutoML(BaseEstimator):
                 memory_allocation = self._dataset_compression["memory_allocation"]
 
                 # Remove precision reduction if we can't perform it
-                if (
-                    "precision" in methods
-                    and X.dtype not in supported_precision_reductions
-                ):
+                if "precision" in methods and X.dtype not in supported_precision_reductions:
                     methods = [method for method in methods if method != "precision"]
 
                 with warnings_to(self._logger):
@@ -716,13 +709,11 @@ class AutoML(BaseEstimator):
                 for entry in self._metrics:
                     if not isinstance(entry, Scorer):
                         raise ValueError(
-                            f"Metric {entry} must be instance of"
-                            " autosklearn.metrics.Scorer."
+                            f"Metric {entry} must be instance of" " autosklearn.metrics.Scorer."
                         )
             else:
                 raise ValueError(
-                    "Metric must be a sequence of instances of "
-                    "autosklearn.metrics.Scorer."
+                    "Metric must be a sequence of instances of " "autosklearn.metrics.Scorer."
                 )
 
             self._dataset_name = dataset_name
@@ -779,7 +770,6 @@ class AutoML(BaseEstimator):
             # dummy predictions are actually included in the ensemble even if
             # calculating the meta-features takes very long
             with self._stopwatch.time("Run Ensemble Builder"):
-
                 elapsed_time = self._stopwatch.time_since(self._dataset_name, "start")
 
                 time_left_for_ensembles = max(0, self._time_for_task - elapsed_time)
@@ -794,13 +784,10 @@ class AutoML(BaseEstimator):
                             "of time_left_for_this_task."
                         )
                 elif self._ensemble_class is None:
-                    self._logger.info(
-                        "No ensemble buildin because no ensemble class was given."
-                    )
+                    self._logger.info("No ensemble buildin because no ensemble class was given.")
                 else:
                     self._logger.info(
-                        "Start Ensemble with %5.2fsec time left"
-                        % time_left_for_ensembles
+                        "Start Ensemble with %5.2fsec time left" % time_left_for_ensembles
                     )
 
                     proc_ensemble = EnsembleBuilderManager(
@@ -838,16 +825,11 @@ class AutoML(BaseEstimator):
                 if self._logger:
                     self._logger.info("Start SMAC with %5.2fsec time left" % time_left)
                 if time_left <= 0:
-                    self._logger.warning(
-                        "Not starting SMAC because there is no time left."
-                    )
+                    self._logger.warning("Not starting SMAC because there is no time left.")
                     _proc_smac = None
                     self._budget_type = None
                 else:
-                    if (
-                        self._per_run_time_limit is None
-                        or self._per_run_time_limit > time_left
-                    ):
+                    if self._per_run_time_limit is None or self._per_run_time_limit > time_left:
                         self._logger.warning(
                             "Time limit for a single run is higher than total time "
                             "limit. Capping the limit for a single run to the total "
@@ -863,9 +845,7 @@ class AutoML(BaseEstimator):
                         per_run_time_limit = time_left // 2
                         self._logger.warning(
                             "Capping the per_run_time_limit to {} to have "
-                            "time for a least 2 models in each process.".format(
-                                per_run_time_limit
-                            )
+                            "time for a least 2 models in each process.".format(per_run_time_limit)
                         )
 
                     n_meta_configs = self._initial_configurations_via_metalearning
@@ -913,9 +893,7 @@ class AutoML(BaseEstimator):
                             "trajectory.json",
                         )
                         saveable_trajectory = [
-                            list(entry[:2])
-                            + [entry[2].get_dictionary()]
-                            + list(entry[3:])
+                            list(entry[:2]) + [entry[2].get_dictionary()] + list(entry[3:])
                             for entry in self.trajectory_
                         ]
                         with open(trajectory_filename, "w") as fh:
@@ -925,36 +903,27 @@ class AutoML(BaseEstimator):
                         # Wait until the ensemble process is finished to avoid shutting
                         # down while the ensemble builder tries to access the data
                         if proc_ensemble is not None:
-                            self.ensemble_performance_history = list(
-                                proc_ensemble.history
-                            )
+                            self.ensemble_performance_history = list(proc_ensemble.history)
 
                             if len(proc_ensemble.futures) > 0:
                                 # Now we wait for the future to return as it cannot be
                                 # cancelled while it is running
                                 # * https://stackoverflow.com/a/49203129
                                 self._logger.info(
-                                    "Ensemble script still running,"
-                                    " waiting for it to finish."
+                                    "Ensemble script still running," " waiting for it to finish."
                                 )
                                 result = proc_ensemble.futures.pop().result()
 
                             if result:
                                 ensemble_history, _ = result
-                                self.ensemble_performance_history.extend(
-                                    ensemble_history
-                                )
+                                self.ensemble_performance_history.extend(ensemble_history)
 
-                            self._logger.info(
-                                "Ensemble script finished, continue shutdown."
-                            )
+                            self._logger.info("Ensemble script finished, continue shutdown.")
 
                 # save the ensemble performance history file
                 if len(self.ensemble_performance_history) > 0:
                     pd.DataFrame(self.ensemble_performance_history).to_json(
-                        os.path.join(
-                            self._backend.internals_directory, "ensemble_history.json"
-                        )
+                        os.path.join(self._backend.internals_directory, "ensemble_history.json")
                     )
 
             if load_models:
@@ -983,9 +952,7 @@ class AutoML(BaseEstimator):
         self._logger.debug("Starting to print environment information")
         self._logger.debug("  Python version: %s", sys.version.split("\n"))
         try:
-            self._logger.debug(
-                f"\tDistribution: {distro.id()}-{distro.version()}-{distro.name()}"
-            )
+            self._logger.debug(f"\tDistribution: {distro.id()}-{distro.version()}-{distro.name()}")
         except AttributeError:
             pass
 
@@ -1034,17 +1001,11 @@ class AutoML(BaseEstimator):
             str(self._resampling_strategy_arguments),
         )
         self._logger.debug("  n_jobs: %s", str(self._n_jobs))
-        self._logger.debug(
-            "  multiprocessing_context: %s", str(self._multiprocessing_context)
-        )
+        self._logger.debug("  multiprocessing_context: %s", str(self._multiprocessing_context))
         self._logger.debug("  dask_client: %s", str(self._dask))
         self._logger.debug("  precision: %s", str(self.precision))
-        self._logger.debug(
-            "  disable_evaluator_output: %s", str(self._disable_evaluator_output)
-        )
-        self._logger.debug(
-            "  get_smac_objective_callback: %s", str(self._get_smac_object_callback)
-        )
+        self._logger.debug("  disable_evaluator_output: %s", str(self._disable_evaluator_output))
+        self._logger.debug("  get_smac_objective_callback: %s", str(self._get_smac_object_callback))
         self._logger.debug("  smac_scenario_args: %s", str(self._smac_scenario_args))
         self._logger.debug("  logging_config: %s", str(self.logging_config))
         if len(self._metrics) == 1:
@@ -1119,9 +1080,7 @@ class AutoML(BaseEstimator):
             ]
             and not is_split_object
         ):
-            raise ValueError(
-                "Illegal resampling strategy: %s" % self._resampling_strategy
-            )
+            raise ValueError("Illegal resampling strategy: %s" % self._resampling_strategy)
 
         elif is_split_object:
             TrainEvaluator.check_splitter_resampling_strategy(
@@ -1294,9 +1253,7 @@ class AutoML(BaseEstimator):
         if task is None:
             y_task = type_of_target(y)
             if not self._supports_task_type(y_task):
-                raise ValueError(
-                    f"{self.__class__.__name__} does not support" f" task {y_task}"
-                )
+                raise ValueError(f"{self.__class__.__name__} does not support" f" task {y_task}")
             self._task = self._task_type_id(y_task)
         else:
             self._task = task
@@ -1312,9 +1269,7 @@ class AutoML(BaseEstimator):
             self.configuration_space = self.fit(
                 X=X,
                 y=y,
-                dataset_name=dataset_name
-                if dataset_name is not None
-                else self._dataset_name,
+                dataset_name=dataset_name if dataset_name is not None else self._dataset_name,
                 X_test=X_test,
                 y_test=y_test,
                 feat_type=feat_type,
@@ -1428,9 +1383,7 @@ class AutoML(BaseEstimator):
                 f"strategy {self._resampling_strategy}, please call refit()."
             )
         elif self._disable_evaluator_output is not False:
-            raise NotImplementedError(
-                "Predict cannot be called when evaluator output is disabled."
-            )
+            raise NotImplementedError("Predict cannot be called when evaluator output is disabled.")
 
         if self.models_ is None or len(self.models_) == 0 or self.ensemble_ is None:
             self._load_models()
@@ -1440,8 +1393,7 @@ class AutoML(BaseEstimator):
         # be called.
         if self.ensemble_ is None:
             raise ValueError(
-                "Predict and predict_proba can only be called "
-                "if ensemble class is given."
+                "Predict and predict_proba can only be called " "if ensemble class is given."
             )
 
         # Make sure that input is valid
@@ -1450,6 +1402,9 @@ class AutoML(BaseEstimator):
                 "predict() can only be called after performing fit(). Kindly call "
                 "the estimator fit() method first."
             )
+        from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import Balancing
+
+        assert not isinstance(self.InputValidator.feature_validator, Balancing)
         X = self.InputValidator.feature_validator.transform(X)
 
         # Parallelize predictions across models with n_jobs processes.
@@ -1518,8 +1473,7 @@ class AutoML(BaseEstimator):
 
         if ensemble_class is None and self._ensemble_class is None:
             raise ValueError(
-                "Please pass `ensemble_class` either to `fit_ensemble()` "
-                "or the constructor."
+                "Please pass `ensemble_class` either to `fit_ensemble()` " "or the constructor."
             )
 
         # AutoSklearn does not handle sparse y for now
@@ -1553,18 +1507,12 @@ class AutoML(BaseEstimator):
                 task=task if task else self._task,
                 metrics=metrics if metrics is not None else self._metrics,
                 ensemble_class=(
-                    ensemble_class
-                    if ensemble_class is not None
-                    else self._ensemble_class
+                    ensemble_class if ensemble_class is not None else self._ensemble_class
                 ),
                 ensemble_kwargs=(
-                    ensemble_kwargs
-                    if ensemble_kwargs is not None
-                    else self._ensemble_kwargs
+                    ensemble_kwargs if ensemble_kwargs is not None else self._ensemble_kwargs
                 ),
-                ensemble_nbest=ensemble_nbest
-                if ensemble_nbest
-                else self._ensemble_nbest,
+                ensemble_nbest=ensemble_nbest if ensemble_nbest else self._ensemble_nbest,
                 max_models_on_disc=self._max_models_on_disc,
                 seed=self._seed,
                 precision=precision if precision else self.precision,
@@ -1625,9 +1573,7 @@ class AutoML(BaseEstimator):
             self.models_ = self._backend.load_models_by_identifiers(identifiers)
 
             if self._resampling_strategy in ("cv", "cv-iterative-fit"):
-                self.cv_models_ = self._backend.load_cv_models_by_identifiers(
-                    identifiers
-                )
+                self.cv_models_ = self._backend.load_cv_models_by_identifiers(identifiers)
             else:
                 self.cv_models_ = None
         else:
@@ -1687,8 +1633,7 @@ class AutoML(BaseEstimator):
         for ensemble in pareto_set:
             identifiers = ensemble.get_selected_model_identifiers()
             weights = {
-                identifier: weight
-                for identifier, weight in ensemble.get_identifiers_with_weights()
+                identifier: weight for identifier, weight in ensemble.get_identifiers_with_weights()
             }
 
             if self._task in CLASSIFICATION_TASKS:
@@ -2003,13 +1948,9 @@ class AutoML(BaseEstimator):
                 key = f"mean_test_{metric.name}"
                 results[key] = np.array(metric_dict[metric.name])
                 rank_order = -1 * metric._sign * results[key]
-                results[f"rank_test_{metric.name}"] = scipy.stats.rankdata(
-                    rank_order, method="min"
-                )
+                results[f"rank_test_{metric.name}"] = scipy.stats.rankdata(rank_order, method="min")
         for metric in self._scoring_functions:
-            masked_array = ma.MaskedArray(
-                metric_dict[metric.name], metric_mask[metric.name]
-            )
+            masked_array = ma.MaskedArray(metric_dict[metric.name], metric_mask[metric.name])
             results[f"metric_{metric.name}"] = masked_array
 
         results["mean_fit_time"] = np.array(mean_fit_time)
@@ -2018,9 +1959,7 @@ class AutoML(BaseEstimator):
         results["budgets"] = budgets
 
         for hp_name in hp_names:
-            masked_array = ma.MaskedArray(
-                parameter_dictionaries[hp_name], masks[hp_name]
-            )
+            masked_array = ma.MaskedArray(parameter_dictionaries[hp_name], masks[hp_name])
             results["param_%s" % hp_name] = masked_array
 
         return results
@@ -2038,8 +1977,7 @@ class AutoML(BaseEstimator):
         idx_success = np.where(
             np.array(
                 [
-                    status
-                    in ["Success", "Success (but do not advance to higher budget)"]
+                    status in ["Success", "Success (but do not advance to higher budget)"]
                     for status in cv_results["status"]
                 ]
             )
@@ -2070,13 +2008,11 @@ class AutoML(BaseEstimator):
         sio.write("  Number of crashed target algorithm runs: %d\n" % num_crash)
         num_timeout = sum([s == "Timeout" for s in cv_results["status"]])
         sio.write(
-            "  Number of target algorithms that exceeded the time "
-            "limit: %d\n" % num_timeout
+            "  Number of target algorithms that exceeded the time " "limit: %d\n" % num_timeout
         )
         num_memout = sum([s == "Memout" for s in cv_results["status"]])
         sio.write(
-            "  Number of target algorithms that exceeded the memory "
-            "limit: %d\n" % num_memout
+            "  Number of target algorithms that exceeded the memory " "limit: %d\n" % num_memout
         )
         return sio.getvalue()
 
@@ -2159,9 +2095,7 @@ class AutoML(BaseEstimator):
         ensemble_dict = {}
 
         if self._ensemble_class is None:
-            warnings.warn(
-                "No models in the ensemble. Kindly provide an ensemble class."
-            )
+            warnings.warn("No models in the ensemble. Kindly provide an ensemble class.")
             return ensemble_dict
 
         # check for condition when ensemble_size > 0 but there is no ensemble to load
@@ -2177,9 +2111,7 @@ class AutoML(BaseEstimator):
 
         # Checking if the dictionary is empty
         if not table_dict:
-            raise RuntimeError(
-                "No model found. Try increasing 'time_left_for_this_task'."
-            )
+            raise RuntimeError("No model found. Try increasing 'time_left_for_this_task'.")
 
         for (_, model_id, _), weight in self.ensemble_.get_identifiers_with_weights():
             table_dict[model_id]["ensemble_weight"] = weight
@@ -2220,9 +2152,7 @@ class AutoML(BaseEstimator):
 
                     # Adding sklearn model to the model dictionary
                     model_type, autosklearn_wrapped_model = cv_model.steps[-1]
-                    estimator[
-                        f"sklearn_{model_type}"
-                    ] = autosklearn_wrapped_model.choice.estimator
+                    estimator[f"sklearn_{model_type}"] = autosklearn_wrapped_model.choice.estimator
                     cv_models.append(estimator)
                 model_dict["estimators"] = cv_models
 
@@ -2233,9 +2163,7 @@ class AutoML(BaseEstimator):
 
                 # Adding sklearn model to the model dictionary
                 model_type, autosklearn_wrapped_model = model.steps[-1]
-                model_dict[
-                    f"sklearn_{model_type}"
-                ] = autosklearn_wrapped_model.choice.estimator
+                model_dict[f"sklearn_{model_type}"] = autosklearn_wrapped_model.choice.estimator
 
             # Insterting model_dict in the ensemble dictionary
             ensemble_dict[model_id] = model_dict
@@ -2286,7 +2214,6 @@ class AutoML(BaseEstimator):
 
 
 class AutoMLClassifier(AutoML):
-
     _task_mapping = {
         "multilabel-indicator": MULTILABEL_CLASSIFICATION,
         "multiclass": MULTICLASS_CLASSIFICATION,
@@ -2355,9 +2282,7 @@ class AutoMLClassifier(AutoML):
     ) -> np.ndarray:
         check_is_fitted(self)
 
-        predicted_probabilities = super().predict(
-            X, batch_size=batch_size, n_jobs=n_jobs
-        )
+        predicted_probabilities = super().predict(X, batch_size=batch_size, n_jobs=n_jobs)
 
         if self.InputValidator.target_validator.is_single_column_target():
             predicted_indexes = np.argmax(predicted_probabilities, axis=1)
@@ -2376,7 +2301,6 @@ class AutoMLClassifier(AutoML):
 
 
 class AutoMLRegressor(AutoML):
-
     _task_mapping = {
         "continuous-multioutput": MULTIOUTPUT_REGRESSION,
         "continuous": REGRESSION,

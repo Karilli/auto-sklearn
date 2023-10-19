@@ -6,7 +6,8 @@ import pkgutil
 import sys
 from collections import OrderedDict
 
-from sklearn.base import BaseEstimator, TransformerMixin
+from autosklearn.sklearn_fixes.base import TransformerMixin
+from sklearn.base import BaseEstimator
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.constants import SPARSE
@@ -23,11 +24,7 @@ def find_components(package, directory, base_class):
             module = importlib.import_module(full_module_name)
 
             for member_name, obj in inspect.getmembers(module):
-                if (
-                    inspect.isclass(obj)
-                    and issubclass(obj, base_class)
-                    and obj != base_class
-                ):
+                if inspect.isclass(obj) and issubclass(obj, base_class) and obj != base_class:
                     # TODO test if the obj implements the interface
                     # Keep in mind that this only instantiates the ensemble_wrapper,
                     # but not the real target classifier
@@ -47,9 +44,7 @@ class ThirdPartyComponents(object):
             name = obj.__name__
             classifier = obj
         else:
-            raise TypeError(
-                "add_component works only with a subclass of %s" % str(self.base_class)
-            )
+            raise TypeError("add_component works only with a subclass of %s" % str(self.base_class))
 
         properties = set(classifier.get_properties())
         should_be_there = {
@@ -73,9 +68,7 @@ class ThirdPartyComponents(object):
                 )
         for property in should_be_there:
             if property not in properties:
-                raise ValueError(
-                    "Property %s not specified for algorithm %s" % (property, name)
-                )
+                raise ValueError("Property %s not specified for algorithm %s" % (property, name))
 
         self.components[name] = classifier
 
@@ -198,9 +191,7 @@ class IterativeComponentWithSampleWeight(AutoSklearnComponent):
         iteration = 2
         while not self.configuration_fully_fitted():
             n_iter = int(2**iteration / 2)
-            self.iterative_fit(
-                X, y, n_iter=n_iter, refit=False, sample_weight=sample_weight
-            )
+            self.iterative_fit(X, y, n_iter=n_iter, refit=False, sample_weight=sample_weight)
             iteration += 1
 
         return self
@@ -386,25 +377,19 @@ class AutoSklearnChoice(object):
     def get_components(cls):
         raise NotImplementedError()
 
-    def get_available_components(
-        self, dataset_properties=None, include=None, exclude=None
-    ):
+    def get_available_components(self, dataset_properties=None, include=None, exclude=None):
         if dataset_properties is None:
             dataset_properties = {}
 
         if include is not None and exclude is not None:
-            raise ValueError(
-                "The argument include and exclude cannot be used together."
-            )
+            raise ValueError("The argument include and exclude cannot be used together.")
 
         available_comp = self.get_components()
 
         if include is not None:
             for incl in include:
                 if incl not in available_comp:
-                    raise ValueError(
-                        "Trying to include unknown component: " "%s" % incl
-                    )
+                    raise ValueError("Trying to include unknown component: " "%s" % incl)
 
         components_dict = OrderedDict()
         for name in available_comp:

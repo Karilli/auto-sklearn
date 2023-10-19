@@ -57,8 +57,7 @@ class CoalescenseChoice(AutoSklearnChoice):
 
         if len(available_preprocessors) == 0:
             raise ValueError(
-                "No minority coalescers found, please add any one minority coalescer"
-                "component."
+                "No minority coalescers found, please add any one minority coalescer" "component."
             )
 
         if default is None:
@@ -122,4 +121,7 @@ class CoalescenseChoice(AutoSklearnChoice):
         return self
 
     def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
+        from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import Balancing
+
+        assert not isinstance(self.choice, Balancing)
         return self.choice.transform(X)

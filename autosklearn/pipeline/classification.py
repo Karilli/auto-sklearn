@@ -97,7 +97,6 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
         )
 
     def fit_transformer(self, X, y, fit_params=None):
-
         if fit_params is None:
             fit_params = {}
 
@@ -120,9 +119,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
             if _fit_params is not None:
                 fit_params.update(_fit_params)
 
-        X, fit_params = super().fit_transformer(X, y, fit_params=fit_params)
-
-        return X, fit_params
+        return super().fit_transformer(X, y, fit_params=fit_params)
 
     def predict_proba(self, X, batch_size=None):
         """predict_proba.
@@ -146,8 +143,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
         else:
             if not isinstance(batch_size, int):
                 raise ValueError(
-                    "Argument 'batch_size' must be of type int, "
-                    "but is '%s'" % type(batch_size)
+                    "Argument 'batch_size' must be of type int, " "but is '%s'" % type(batch_size)
                 )
             if batch_size <= 0:
                 raise ValueError(
@@ -163,9 +159,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                 for k in range(max(1, int(np.ceil(float(X.shape[0]) / batch_size)))):
                     batch_from = k * batch_size
                     batch_to = min([(k + 1) * batch_size, X.shape[0]])
-                    pred_prob = self.predict_proba(
-                        X[batch_from:batch_to], batch_size=None
-                    )
+                    pred_prob = self.predict_proba(X[batch_from:batch_to], batch_size=None)
                     y[batch_from:batch_to] = pred_prob.astype(np.float32)
 
                 return y
@@ -214,9 +208,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
 
         classifiers = cs.get_hyperparameter("classifier:__choice__").choices
         preprocessors = cs.get_hyperparameter("feature_preprocessor:__choice__").choices
-        available_classifiers = self._final_estimator.get_available_components(
-            dataset_properties
-        )
+        available_classifiers = self._final_estimator.get_available_components(dataset_properties)
 
         possible_default_classifier = copy.copy(list(available_classifiers.keys()))
         default = cs.get_hyperparameter("classifier:__choice__").default_value
@@ -233,14 +225,10 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                                 cs.get_hyperparameter("classifier:__choice__"), key
                             )
                             forb_fpp = ForbiddenEqualsClause(
-                                cs.get_hyperparameter(
-                                    "feature_preprocessor:__choice__"
-                                ),
+                                cs.get_hyperparameter("feature_preprocessor:__choice__"),
                                 "densifier",
                             )
-                            cs.add_forbidden_clause(
-                                ForbiddenAndConjunction(forb_cls, forb_fpp)
-                            )
+                            cs.add_forbidden_clause(ForbiddenAndConjunction(forb_cls, forb_fpp))
                             # Success
                             break
                         except ValueError:
@@ -248,12 +236,8 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                             try:
                                 default = possible_default_classifier.pop()
                             except IndexError:
-                                raise ValueError(
-                                    "Cannot find a legal default configuration."
-                                )
-                            cs.get_hyperparameter(
-                                "classifier:__choice__"
-                            ).default_value = default
+                                raise ValueError("Cannot find a legal default configuration.")
+                            cs.get_hyperparameter("classifier:__choice__").default_value = default
 
         # which would take too long
         # Combinations of non-linear models with feature learning:
@@ -287,9 +271,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                                 cs.get_hyperparameter("classifier:__choice__"), c
                             ),
                             ForbiddenEqualsClause(
-                                cs.get_hyperparameter(
-                                    "feature_preprocessor:__choice__"
-                                ),
+                                cs.get_hyperparameter("feature_preprocessor:__choice__"),
                                 f,
                             ),
                         )
@@ -303,9 +285,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                         default = possible_default_classifier.pop()
                     except IndexError:
                         raise ValueError("Cannot find a legal default configuration.")
-                    cs.get_hyperparameter(
-                        "classifier:__choice__"
-                    ).default_value = default
+                    cs.get_hyperparameter("classifier:__choice__").default_value = default
 
         # Won't work
         # Multinomial NB etc don't use with features learning, pca etc
@@ -329,9 +309,7 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                     cs.add_forbidden_clause(
                         ForbiddenAndConjunction(
                             ForbiddenEqualsClause(
-                                cs.get_hyperparameter(
-                                    "feature_preprocessor:__choice__"
-                                ),
+                                cs.get_hyperparameter("feature_preprocessor:__choice__"),
                                 f,
                             ),
                             ForbiddenEqualsClause(
@@ -348,17 +326,13 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                         default = possible_default_classifier.pop()
                     except IndexError:
                         raise ValueError("Cannot find a legal default configuration.")
-                    cs.get_hyperparameter(
-                        "classifier:__choice__"
-                    ).default_value = default
+                    cs.get_hyperparameter("classifier:__choice__").default_value = default
 
         self.configuration_space = cs
         self.dataset_properties = dataset_properties
         return cs
 
-    def _get_pipeline_steps(
-        self, dataset_properties, feat_type: Optional[FEAT_TYPE_TYPE] = None
-    ):
+    def _get_pipeline_steps(self, dataset_properties, feat_type: Optional[FEAT_TYPE_TYPE] = None):
         steps = []
 
         default_dataset_properties = {"target_type": "classification"}

@@ -7,6 +7,7 @@ from sklearn.base import BaseEstimator
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
+
 from autosklearn.pipeline.components.base import AutoSklearnPreprocessingAlgorithm
 from autosklearn.pipeline.constants import (
     DENSE,
@@ -26,14 +27,16 @@ class Balancing(AutoSklearnPreprocessingAlgorithm):
         self.strategy = strategy
         self.random_state = random_state
 
-    def fit(
-        self, X: PIPELINE_DATA_DTYPE, y: Optional[PIPELINE_DATA_DTYPE] = None
-    ) -> "Balancing":
+    def fit(self, X: PIPELINE_DATA_DTYPE, y: Optional[PIPELINE_DATA_DTYPE] = None) -> "Balancing":
         self.fitted_ = True
         return self
 
-    def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
-        return X
+    def transform(self, X: PIPELINE_DATA_DTYPE, y) -> PIPELINE_DATA_DTYPE:
+        from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE
+
+        if self.strategy == "SMOTE":
+            return BorderlineSMOTE().fit_resample(X, y)
+        return X, y
 
     def get_weights(
         self,
@@ -144,9 +147,7 @@ class Balancing(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
         # TODO add replace by zero!
-        strategy = CategoricalHyperparameter(
-            "strategy", ["none", "weighting"], default_value="none"
-        )
+        strategy = CategoricalHyperparameter("strategy", ["none", "SMOTE"], default_value="none")
         cs = ConfigurationSpace()
         cs.add_hyperparameter(strategy)
         return cs
