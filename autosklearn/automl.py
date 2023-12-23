@@ -616,6 +616,7 @@ class AutoML(BaseEstimator):
 
         # Assign a metric if it doesnt exist
         if self._metrics is None:
+            print(2)
             self._metrics = [default_metric_for_task[self._task]]
         _validate_metrics(self._metrics, self._scoring_functions)
 
@@ -1260,6 +1261,7 @@ class AutoML(BaseEstimator):
 
         # Assign a metric if it doesnt exist
         if self._metrics is None:
+            print("1")
             self._metrics = [default_metric_for_task[self._task]]
 
         # Get the configuration space
@@ -1734,6 +1736,7 @@ class AutoML(BaseEstimator):
         # same representation domain
         prediction = self.InputValidator.target_validator.transform(prediction)
 
+        print(3)
         return compute_single_metric(
             solution=y,
             prediction=prediction,

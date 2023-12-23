@@ -178,3 +178,6 @@ class DataPreprocessorChoice(AutoSklearnChoice):
         )
 
         return self
+
+    def __repr__(self):
+        return str(self.choice)

@@ -141,6 +141,8 @@ class AutoSklearnComponent(BaseEstimator):
         params = configuration.get_dictionary()
 
         for param, value in params.items():
+            if param.startswith("SMOTE") and 6 <= len(param):
+                param = param[6:]
             if not hasattr(self, param):
                 raise ValueError(
                     "Cannot set hyperparameter %s for %s because "

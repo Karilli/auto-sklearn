@@ -149,3 +149,6 @@ class FeaturePreprocessorChoice(AutoSklearnChoice):
 
     def transform(self, X):
         return self.choice.transform(X)
+
+    def __repr__(self):
+        return str(self.choice)

@@ -174,3 +174,6 @@ class ClassifierChoice(AutoSklearnChoice):
 
     def configuration_fully_fitted(self):
         return self.choice.configuration_fully_fitted()
+    
+    def __repr__(self):
+        return str(self.choice)

@@ -2,7 +2,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import CategoricalHyperparameter
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
 from sklearn.base import BaseEstimator
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -18,24 +22,44 @@ from autosklearn.pipeline.constants import (
 )
 
 
+ENABLE_SMOTE = 1
+ENABLE_PARAMS = 0
+
 class Balancing(AutoSklearnPreprocessingAlgorithm):
     def __init__(
         self,
         strategy: str = "none",
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
+        sampling_strategy: float = 1.0,
+        k_neighbors: int = 5,
+        m_neighbors: int = 10,
+        out_step: float = 0.5,
+        random_state: Optional[Union[int, np.random.RandomState]] = None
     ) -> None:
         self.strategy = strategy
         self.random_state = random_state
+        self.sampling_strategy= sampling_strategy
+        self.k_neighbors = k_neighbors
+        self.m_neighbors = m_neighbors
+        self.out_step = out_step
 
     def fit(self, X: PIPELINE_DATA_DTYPE, y: Optional[PIPELINE_DATA_DTYPE] = None) -> "Balancing":
         self.fitted_ = True
         return self
 
     def transform(self, X: PIPELINE_DATA_DTYPE, y) -> PIPELINE_DATA_DTYPE:
-        from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE
+        from imblearn.over_sampling import SMOTE, SVMSMOTE, BorderlineSMOTE, SMOTENC
+        from collections import Counter
 
         if self.strategy == "SMOTE":
-            return BorderlineSMOTE().fit_resample(X, y)
+            if self.sampling_strategy * len(y) <= min(Counter(y).values()) + 1:
+                return X, y
+            return SVMSMOTE(
+                sampling_strategy=self.sampling_strategy,
+                k_neighbors=self.k_neighbors,
+                m_neighbors=self.m_neighbors,
+                out_step=self.out_step,
+                random_state=self.random_state
+            ).fit_resample(X, y)
         return X, y
 
     def get_weights(
@@ -146,8 +170,21 @@ class Balancing(AutoSklearnPreprocessingAlgorithm):
         feat_type: Optional[FEAT_TYPE_TYPE] = None,
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
-        # TODO add replace by zero!
-        strategy = CategoricalHyperparameter("strategy", ["none", "SMOTE"], default_value="none")
+        
         cs = ConfigurationSpace()
+        strategy = CategoricalHyperparameter("strategy", ["none", "weighting"] + (["SMOTE"] if ENABLE_SMOTE else []), default_value="none")
         cs.add_hyperparameter(strategy)
+
+        if ENABLE_SMOTE and ENABLE_PARAMS:
+            cs_SMOTE = ConfigurationSpace()
+            sampling_strategy = UniformFloatHyperparameter(name="sampling_strategy", lower=0.0, upper=1.0, default_value=1.0, log=False)
+            k_neighbors = UniformIntegerHyperparameter(name="k_neighbors", lower=1, upper=10, default_value=5, log=False)
+            m_neighbors = UniformIntegerHyperparameter(name="m_neighbors", lower=1, upper=20, default_value=10, log=False)
+            out_step = UniformFloatHyperparameter(name="out_step", lower=0.0, upper=1.0, default_value=0.5, log=False)
+            cs_SMOTE.add_hyperparameters([sampling_strategy, k_neighbors, m_neighbors, out_step])
+            cs.add_configuration_space(
+                "SMOTE",
+                cs_SMOTE,
+                parent_hyperparameter={"parent": strategy, "value": "SMOTE"}
+            )
         return cs
