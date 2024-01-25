@@ -32,7 +32,7 @@ class NoBalancing(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> Dict[str, Optional[Union[str, int, bool, Tuple]]]:
         return {
-            "shortname": "no_alancing",
+            "shortname": "no_balancing",
             "name": "NoBalancing",
             "handles_missing_values": True,
             "handles_nominal_values": True,

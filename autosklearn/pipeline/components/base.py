@@ -474,3 +474,6 @@ class AutoSklearnChoice(object):
 
     def predict(self, X):
         return self.choice.predict(X)
+
+    def __repr__(self):
+        return str(self.choice)
