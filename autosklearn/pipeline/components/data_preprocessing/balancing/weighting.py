@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from ConfigSpace.configuration_space import ConfigurationSpace
-from ConfigSpace.hyperparameters import CategoricalHyperparameter
 from sklearn.base import BaseEstimator
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -17,26 +16,21 @@ from autosklearn.pipeline.constants import (
 )
 
 
-class Balancing(AutoSklearnPreprocessingAlgorithm):
-    def __init__(
-        self,
-        strategy: str = "none",
-        random_state: Optional[Union[int, np.random.RandomState]] = None,
-    ) -> None:
-        self.strategy = strategy
-        self.random_state = random_state
+class Weighting(AutoSklearnPreprocessingAlgorithm):
+    def __init__(self, random_state=None) -> None:
+        pass
 
     def fit(
         self, X: PIPELINE_DATA_DTYPE, y: Optional[PIPELINE_DATA_DTYPE] = None
-    ) -> "Balancing":
+    ) -> "Weighting":
         self.fitted_ = True
         return self
 
     def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
         return X
 
+    @staticmethod
     def get_weights(
-        self,
         Y: PIPELINE_DATA_DTYPE,
         classifier: BaseEstimator,
         preprocessor: BaseEstimator,
@@ -118,8 +112,8 @@ class Balancing(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> Dict[str, Optional[Union[str, int, bool, Tuple]]]:
         return {
-            "shortname": "Balancing",
-            "name": "Balancing Imbalanced Class Distributions",
+            "shortname": "weighting",
+            "name": "Weighting",
             "handles_missing_values": True,
             "handles_nominal_values": True,
             "handles_numerical_features": True,
@@ -143,10 +137,4 @@ class Balancing(AutoSklearnPreprocessingAlgorithm):
         feat_type: Optional[FEAT_TYPE_TYPE] = None,
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
-        # TODO add replace by zero!
-        strategy = CategoricalHyperparameter(
-            "strategy", ["none", "weighting"], default_value="none"
-        )
-        cs = ConfigurationSpace()
-        cs.add_hyperparameter(strategy)
-        return cs
+        return ConfigurationSpace()
