@@ -329,3 +329,6 @@ class FeatTypeSplit(AutoSklearnPreprocessingAlgorithm):
                     dataset_properties, cs, st_operation
                 )
         return cs
+
+    def __repr__(self):
+        return "FeatTypeSplit(" + "\n\t\t".join(f"{key}: {str(val)}," for key, val in self.config.items()) + ")"

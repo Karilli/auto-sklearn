@@ -476,4 +476,6 @@ class AutoSklearnChoice(object):
         return self.choice.predict(X)
 
     def __repr__(self):
-        return str(self.choice)
+        if not hasattr(self.choice, "random_state"):
+            setattr(self.choice, "random_state", None)
+        return repr(self.choice)
