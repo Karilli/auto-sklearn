@@ -4,7 +4,7 @@ from typing import Dict, Optional, Union
 import numpy as np
 import scipy.sparse
 from ConfigSpace import Configuration
-from sklearn.pipeline import Pipeline
+from imblearn.pipeline import Pipeline
 
 import autosklearn.pipeline.create_searchspace_util
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -108,7 +108,7 @@ class BasePipeline(Pipeline):
             Targets
 
         fit_params : dict
-            See the documentation of sklearn.pipeline.Pipeline for formatting
+            See the documentation of imblearn.pipeline.Pipeline for formatting
             instructions.
 
         Returns
@@ -121,7 +121,11 @@ class BasePipeline(Pipeline):
             NoModelException is raised if fit() is called without specifying
             a classification algorithm first.
         """
-        X, fit_params = self.fit_transformer(X, y, **fit_params)
+        res, fit_params = self.fit_transformer(X, y, **fit_params)
+        if isinstance(res, tuple):
+            X, y = res
+        else:
+            X = res
         self.fit_estimator(X, y, **fit_params)
         return self
 

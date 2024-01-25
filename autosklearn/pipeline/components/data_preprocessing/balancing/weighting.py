@@ -20,14 +20,10 @@ class Weighting(AutoSklearnPreprocessingAlgorithm):
     def __init__(self, random_state=None) -> None:
         pass
 
-    def fit(
-        self, X: PIPELINE_DATA_DTYPE, y: Optional[PIPELINE_DATA_DTYPE] = None
-    ) -> "Weighting":
-        self.fitted_ = True
-        return self
-
-    def transform(self, X: PIPELINE_DATA_DTYPE) -> PIPELINE_DATA_DTYPE:
-        return X
+    def fit_resample(
+        self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
+    ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
+        return X, y
 
     @staticmethod
     def get_weights(

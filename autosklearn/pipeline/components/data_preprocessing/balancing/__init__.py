@@ -159,5 +159,5 @@ class BalancingChoice(AutoSklearnChoice):
 
         return cs
 
-    def transform(self, X):
-        return self.choice.transform(X)
+    def fit_resample(self, X, y):
+        return self.choice.fit_resample(X, y)

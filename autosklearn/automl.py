@@ -47,7 +47,7 @@ from sklearn.model_selection._split import (
     BaseShuffleSplit,
     _RepeatedSplits,
 )
-from sklearn.pipeline import Pipeline
+from imblearn.pipeline import Pipeline
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_is_fitted
 from smac.callbacks import IncorporateRunResultCallback

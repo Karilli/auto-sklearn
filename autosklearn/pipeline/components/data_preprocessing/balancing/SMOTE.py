@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
-from imblearn import SMOTE
+from imblearn.over_sampling import SMOTE as SmoteAlgorithm
 from ConfigSpace.configuration_space import ConfigurationSpace
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -29,7 +29,7 @@ class SMOTE(AutoSklearnPreprocessingAlgorithm):
     def fit_resample(
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
-        return SMOTE(
+        return SmoteAlgorithm(
             sampling_strategy=self.sampling_strategy,
             k_neighbors=self.k_neighbors,
             random_state=self.random_state
