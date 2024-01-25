@@ -30,6 +30,7 @@ balancing_directory = os.path.split(__file__)[0]
 _preprocessors = find_components(
     __package__, balancing_directory, AutoSklearnPreprocessingAlgorithm
 )
+
 additional_components = ThirdPartyComponents(AutoSklearnPreprocessingAlgorithm)
 _addons["data_preprocessing.balancing"] = additional_components
 
@@ -38,6 +39,7 @@ _addons["data_preprocessing.balancing"] = additional_components
 # packages.
 from .no_balancing import NoBalancing  # noqa
 from .weighting import Weighting  # noqa
+from .SMOTE import SMOTE  # noqa
 
 
 def add_preprocessor(preprocessor: Type[AutoSklearnPreprocessingAlgorithm]) -> None:
