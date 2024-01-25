@@ -37,7 +37,7 @@ _addons["data_preprocessing.balancing"] = additional_components
 # NOTE: all of the "AutoSklearnPreprocessingAlgorithm"s must be imported after call to "find_components"
 # find_components relies on order of imports. The function doesn't add components from previously imported
 # packages.
-from .no_balancing import NoBalancing  # noqa
+from .no_preprocessing import NoBalancing  # noqa
 from .weighting import Weighting  # noqa
 from .SMOTE import SMOTE  # noqa
 

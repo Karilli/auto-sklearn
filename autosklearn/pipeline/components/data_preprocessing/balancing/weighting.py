@@ -17,8 +17,9 @@ from autosklearn.pipeline.constants import (
 
 
 class Weighting(AutoSklearnPreprocessingAlgorithm):
-    def __init__(self, random_state=None) -> None:
-        pass
+    def __init__(self, **kwargs):
+        for key, val in kwargs.items():
+            setattr(self, key, val)
 
     def fit_resample(
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE

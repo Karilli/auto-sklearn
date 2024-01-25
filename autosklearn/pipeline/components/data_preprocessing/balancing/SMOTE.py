@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 import imblearn.over_sampling as imblearn
 from ConfigSpace.configuration_space import ConfigurationSpace
 
@@ -69,6 +69,6 @@ class SMOTE(AutoSklearnPreprocessingAlgorithm):
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
             UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
-            UniformIntegerHyperparameter("k_neighbors", 1, 20, default_value=5)
+            UniformIntegerHyperparameter("k_neighbors", 3, 10, default_value=5)
         ])
         return cs

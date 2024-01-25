@@ -15,8 +15,11 @@ from autosklearn.pipeline.constants import (
 
 
 class NoBalancing(AutoSklearnPreprocessingAlgorithm):
-    def __init__(self, random_state=None) -> None:
-        pass
+    def __init__(self, **kwargs):
+        """This preprocessors does not change the data"""
+        # Some internal checks makes sure parameters are set
+        for key, val in kwargs.items():
+            setattr(self, key, val)
 
     def fit_resample(
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
@@ -28,8 +31,8 @@ class NoBalancing(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> Dict[str, Optional[Union[str, int, bool, Tuple]]]:
         return {
-            "shortname": "no_balancing",
-            "name": "NoBalancing",
+            "shortname": "no_preprocessing",
+            "name": "NoPreprocessing",
             "handles_missing_values": True,
             "handles_nominal_values": True,
             "handles_numerical_features": True,

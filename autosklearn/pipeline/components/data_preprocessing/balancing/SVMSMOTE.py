@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 import imblearn.over_sampling as imblearn
 from sklearn.svm import SVC
 from ConfigSpace.configuration_space import ConfigurationSpace
@@ -52,7 +52,7 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
         return imblearn.SVMSMOTE(
             sampling_strategy=self.sampling_strategy,
             k_neighbors=self.k_neighbors,
-            m_neighbors=self.m_neighbors
+            m_neighbors=self.m_neighbors,
             out_step=self.out_step,
             random_state=self.random_state,
             svm_estimator=SVC(
@@ -69,8 +69,8 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> Dict[str, Optional[Union[str, int, bool, Tuple]]]:
         return {
-            "shortname": "SMOTE",
-            "name": "SMOTE",
+            "shortname": "SVMSMOTE",
+            "name": "SVMSMOTE",
             "handles_missing_values": False,
             "handles_nominal_values": False,
             "handles_numerical_features": True,
@@ -98,13 +98,13 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
             UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
-            UniformIntegerHyperparameter("k_neighbors", 1, 20, default_value=5),
-            UniformIntegerHyperparameter("m_neighbors", 1, 50, default_value=10),
+            UniformIntegerHyperparameter("k_neighbors", 3, 10, default_value=5),
+            UniformIntegerHyperparameter("m_neighbors", 3, 10, default_value=10),
             UniformFloatHyperparameter("out_step", 0.0, 1.0, default_value=0.5, log=False), 
-            
-            UniformFloatHyperparameter("C", 1.0, 1000.0, default_value=1.0, log=True), 
+
+            UniformFloatHyperparameter("C", 0.1, 100.0, default_value=1.0, log=True), 
             CategoricalHyperparameter("kernel", ["linear", "poly", "rbf", "sigmoid", "precomputed"], "rbf"),
-            UniformIntegerHyperparameter("degree", 1, 10, default_value=3),
+            UniformIntegerHyperparameter("degree", 1, 6, default_value=3),
             CategoricalHyperparameter("shrinking", [True, False], True)
         ])
         return cs
