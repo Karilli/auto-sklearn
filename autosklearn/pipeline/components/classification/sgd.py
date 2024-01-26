@@ -179,8 +179,8 @@ class SGD(
 
         loss = CategoricalHyperparameter(
             "loss",
-            ["hinge", "log", "modified_huber", "squared_hinge", "perceptron"],
-            default_value="log",
+            ["hinge", "log_loss", "modified_huber", "squared_hinge", "perceptron"],
+            default_value="log_loss",
         )
         penalty = CategoricalHyperparameter(
             "penalty", ["l1", "l2", "elasticnet"], default_value="l2"

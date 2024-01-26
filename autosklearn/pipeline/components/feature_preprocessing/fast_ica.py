@@ -53,7 +53,7 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
                         "Bug in scikit-learn: "
                         "https://github.com/scikit-learn/scikit-learn/pull/2738"
                     )
-
+        self.preprocessor.fit(X)
         return self
 
     def transform(self, X):
