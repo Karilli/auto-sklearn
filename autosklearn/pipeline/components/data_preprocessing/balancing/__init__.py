@@ -136,7 +136,7 @@ class BalancingChoice(AutoSklearnChoice):
             raise ValueError("No preprocessors found, please add no_balancing")
 
         if default is None:
-            defaults = ["no_balancing", "weighting"]
+            defaults = ["no_balancing", "weighting", "DefaultSVMSMOTE", "RandomUnderSampler", "SMOTEENN"]
             for default_ in defaults:
                 if default_ in available_preprocessors:
                     default = default_

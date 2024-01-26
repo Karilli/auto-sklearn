@@ -1,6 +1,6 @@
 from typing import Dict, Optional, Tuple, Union
-import imblearn.over_sampling as imblearn
-from imblearn.under_sampling import TomekLinks
+import imblearn.combine as imblearn
+from imblearn.over_sampling import SMOTE
 from ConfigSpace.configuration_space import ConfigurationSpace
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -15,28 +15,22 @@ from autosklearn.pipeline.constants import (
 )
 
 from ConfigSpace.hyperparameters import (
-    CategoricalHyperparameter,
     UniformFloatHyperparameter,
     UniformIntegerHyperparameter
 )
 
 
+# TODO: add sampling_strategy parameter for smote and tomek
 class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
     def __init__(
         self, 
         sampling_strategy=1.0, 
-
-        tomek_sampling_strategy=1.0,
-
-        smote_sampling_strategy=1.0,
         smote_k_neighbors=5,
 
         random_state=None
     ) -> None:
         self.sampling_strategy = sampling_strategy
         self.random_state = random_state
-        self.tomek_sampling_strategy = tomek_sampling_strategy
-        self.smote_sampling_strategy = smote_sampling_strategy
         self.smote_k_neighbors = smote_k_neighbors
 
     def fit_resample(
@@ -44,12 +38,8 @@ class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
         return imblearn.SMOTETomek(
             sampling_strategy=self.sampling_strategy,
-            smote=imblearn.SMOTE(
-                sampling_strategy=self.smote_sampling_strategy,
+            smote=SMOTE(
                 k_neighbors=self.smote_k_neighbors
-            ),
-            tomek=TomekLinks(
-                sampling_strategy=self.tomek_sampling_strategy,
             ),
             random_state=self.random_state
         ).fit_resample(X, y)
@@ -88,10 +78,6 @@ class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
             UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
-
-            UniformFloatHyperparameter("tomek_sampling_strategy", 0.0, 1.0, default_value=1.0, log=False),
-
-            UniformFloatHyperparameter("smote_sampling_strategy", 0.0, 1.0, default_value=1.0, log=False),
             UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5)
         ])
         return cs

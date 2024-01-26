@@ -13,45 +13,23 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-    UniformIntegerHyperparameter,
-    CategoricalHyperparameter
-)
 
-class BorderlineSMOTE(AutoSklearnPreprocessingAlgorithm):
-    def __init__(
-            self, 
-            sampling_strategy=1.0, 
-            k_neighbors=5, 
-            m_neighbors=10,
-            kind='borderline-1',
-            random_state=None
-        ) -> None:
-        self.sampling_strategy = sampling_strategy
-        self.k_neighbors = k_neighbors
-        self.m_neighbors = m_neighbors
-        self.kind = kind
+class DefaultSVMSMOTE(AutoSklearnPreprocessingAlgorithm):
+    def __init__(self, random_state=None) -> None:
         self.random_state = random_state
 
     def fit_resample(
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
-        return imblearn.BorderlineSMOTE(
-            sampling_strategy=self.sampling_strategy,
-            k_neighbors=self.k_neighbors,
-            m_neighbors=self.m_neighbors,
-            kind=self.kind,
-            random_state=self.random_state,
-        ).fit_resample(X, y)
+        return imblearn.SVMSMOTE().fit_resample(X, y)
 
     @staticmethod
     def get_properties(
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> Dict[str, Optional[Union[str, int, bool, Tuple]]]:
         return {
-            "shortname": "BorderlineSMOTE",
-            "name": "BorderlineSMOTE",
+            "shortname": "DefaultSVMSMOTE",
+            "name": "DefaultSVMSMOTE",
             "handles_missing_values": False,
             "handles_nominal_values": False,
             "handles_numerical_features": True,
@@ -76,11 +54,4 @@ class BorderlineSMOTE(AutoSklearnPreprocessingAlgorithm):
         feat_type: Optional[FEAT_TYPE_TYPE] = None,
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
-        cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
-            UniformIntegerHyperparameter("k_neighbors", 3, 10, default_value=5),
-            UniformIntegerHyperparameter("m_neighbors", 3, 10, default_value=10),
-            CategoricalHyperparameter("kind", ["borderline-1", "borderline-2"], "borderline-1")
-        ])
-        return cs
+        return ConfigurationSpace()

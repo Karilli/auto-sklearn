@@ -2,6 +2,7 @@ from typing import Dict, Optional, Tuple, Union
 import imblearn.over_sampling as imblearn
 from sklearn.svm import SVC
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace import EqualsCondition
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -29,9 +30,11 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
             out_step=0.5,
 
             C=1.0,
+            gamma=0.1,
             kernel="rbf",
             degree=3,
             shrinking=True,
+            tol=10-3,
             random_state=None
         ) -> None:
         self.sampling_strategy = sampling_strategy
@@ -40,9 +43,11 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
         self.out_step = out_step
 
         self.C=C
+        self.gamma=gamma
         self.kernel = kernel
         self.degree = degree
         self.shrinking = shrinking
+        self.tol=tol
 
         self.random_state = random_state
 
@@ -57,9 +62,11 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
             random_state=self.random_state,
             svm_estimator=SVC(
                 C=self.C,
+                gamma=self.gamma,
                 kernel=self.kernel,
                 degree=self.degree,
                 shrinking=self.shrinking,
+                tol=self.tol,
                 random_state=self.random_state
             )
         ).fit_resample(X, y)
@@ -102,9 +109,13 @@ class SVMSMOTE(AutoSklearnPreprocessingAlgorithm):
             UniformIntegerHyperparameter("m_neighbors", 3, 10, default_value=10),
             UniformFloatHyperparameter("out_step", 0.0, 1.0, default_value=0.5, log=False), 
 
-            UniformFloatHyperparameter("C", 0.1, 100.0, default_value=1.0, log=True), 
-            CategoricalHyperparameter("kernel", ["linear", "poly", "rbf", "sigmoid", "precomputed"], "rbf"),
-            UniformIntegerHyperparameter("degree", 1, 6, default_value=3),
-            CategoricalHyperparameter("shrinking", [True, False], True)
+            UniformFloatHyperparameter("C", 0.03125, 32768, 1.0, log=True),
+            UniformFloatHyperparameter("gamma", 3.0517578125e-05, 8, 0.1, log=True),
+            CategoricalHyperparameter("kernel", ["poly", "rbf", "sigmoid"], "rbf"),
+            UniformIntegerHyperparameter("degree", 2, 5, default_value=3),
+            CategoricalHyperparameter("shrinking", [True, False], True),
+            UniformFloatHyperparameter("tol", 1e-5, 1e-1, 1e-3, log=True)
         ])
+
+        cs.add_condition(EqualsCondition(cs["degree"], cs["kernel"], "poly"))
         return cs

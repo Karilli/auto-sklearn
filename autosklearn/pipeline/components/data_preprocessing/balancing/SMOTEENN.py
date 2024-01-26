@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Tuple, Union
-import imblearn.over_sampling as imblearn
+import imblearn.combine as imblearn
+from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import EditedNearestNeighbours
 from ConfigSpace.configuration_space import ConfigurationSpace
 
@@ -21,26 +22,23 @@ from ConfigSpace.hyperparameters import (
 )
 
 
+# TODO: add sampling_strategy parameter for smote and enn
 class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
     def __init__(
         self, 
         sampling_strategy=1.0, 
 
-        enn_sampling_strategy=1.0,
         enn_n_neighbors=3,
         enn_kind_sel="all",
 
-        smote_sampling_strategy=1.0,
         smote_k_neighbors=5,
 
         random_state=None
     ) -> None:
         self.sampling_strategy = sampling_strategy
         self.random_state = random_state
-        self.enn_sampling_strategy = enn_sampling_strategy
         self.enn_n_neighbors = enn_n_neighbors
         self.enn_kind_sel = enn_kind_sel
-        self.smote_sampling_strategy = smote_sampling_strategy
         self.smote_k_neighbors = smote_k_neighbors
 
     def fit_resample(
@@ -48,14 +46,13 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
         return imblearn.SMOTEENN(
             sampling_strategy=self.sampling_strategy,
-            smote=imblearn.SMOTE(
-                sampling_strategy=self.smote_sampling_strategy,
-                k_neighbors=self.smote_k_neighbors
+            smote=SMOTE(
+                k_neighbors=self.smote_k_neighbors,
+                random_state=self.random_state
             ),
             enn=EditedNearestNeighbours(
-                sampling_strategy=self.enn_sampling_strategy,
                 n_neighbors=self.enn_n_neighbors,
-                kind_sel=self.enn_kind_sel
+                kind_sel=self.enn_kind_sel,
             ),
             random_state=self.random_state
         ).fit_resample(X, y)
@@ -95,11 +92,9 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
         cs.add_hyperparameters([
             UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
 
-            UniformFloatHyperparameter("enn_sampling_strategy", 0.0, 1.0, default_value=1.0, log=False),
-            UniformIntegerHyperparameter("enn_n_neighbors", 1, 10, default_value=3),
+            UniformIntegerHyperparameter("enn_n_neighbors", 3, 10, default_value=3),
             CategoricalHyperparameter("enn_kind_sel", ["all", "mode"], "all"),
 
-            UniformFloatHyperparameter("smote_sampling_strategy", 0.0, 1.0, default_value=1.0, log=False),
             UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5)
         ])
         return cs
