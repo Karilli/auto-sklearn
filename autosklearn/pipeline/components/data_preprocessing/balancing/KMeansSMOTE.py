@@ -90,7 +90,7 @@ class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
+            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
             UniformIntegerHyperparameter("k_neighbors", 2, 10, default_value=2),
 
             UniformIntegerHyperparameter("n_clusters", 2, 20, default_value=8),

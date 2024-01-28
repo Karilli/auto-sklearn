@@ -135,13 +135,16 @@ def _get_classification_configuration_space(
     multilabel = False
     multiclass = False
     sparse = False
+    imbalanced_ratio = None
 
     if task_type == MULTILABEL_CLASSIFICATION:
         multilabel = True
     if task_type == MULTICLASS_CLASSIFICATION:
         multiclass = True
     if task_type == BINARY_CLASSIFICATION:
-        pass
+        _, (c1, c2) = np.unique(datamanager.data["Y_train"], return_counts=True)
+        c1, c2 = sorted((c1, c2))
+        imbalanced_ratio = c1 / c2
 
     if datamanager.info["is_sparse"] == 1:
         sparse = True
@@ -150,6 +153,7 @@ def _get_classification_configuration_space(
         "multilabel": multilabel,
         "multiclass": multiclass,
         "sparse": sparse,
+        "imbalanced_ratio": imbalanced_ratio
     }
 
     return SimpleClassificationPipeline(

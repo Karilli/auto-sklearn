@@ -35,7 +35,7 @@ class GradientBoostingClassifier(
         early_stop,
         tol,
         scoring,
-        n_iter_no_change=0,
+        n_iter_no_change=10**6,
         validation_fraction=None,
         random_state=None,
         verbose=0,
@@ -97,7 +97,7 @@ class GradientBoostingClassifier(
             if check_none(self.scoring):
                 self.scoring = None
             if self.early_stop == "off":
-                self.n_iter_no_change = 0
+                self.n_iter_no_change = 10**6
                 self.validation_fraction_ = None
                 self.early_stopping_ = False
             elif self.early_stop == "train":

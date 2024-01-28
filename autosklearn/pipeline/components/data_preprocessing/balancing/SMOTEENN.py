@@ -97,4 +97,5 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
 
             UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5)
         ])
+
         return cs

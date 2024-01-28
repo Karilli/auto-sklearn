@@ -104,7 +104,6 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
 
         if self.config["balancing:strategy"] == "weighting":
             _init_params, _fit_params = BalancingChoice.prepare_params_for_weighting(
-                y,
                 self.config["classifier:__choice__"],
                 self.config["feature_preprocessor:__choice__"],
                 {},

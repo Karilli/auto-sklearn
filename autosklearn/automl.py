@@ -2260,6 +2260,7 @@ class AutoML(BaseEstimator):
         exclude: Optional[Mapping[str, list[str]]] = None,
     ) -> Tuple[ConfigurationSpace, str]:
         configspace_path = os.path.join(tmp_dir, "space.json")
+        # TODO: somehow propagate imbalanced ratio inot dataset_properties
         configuration_space = pipeline.get_configuration_space(
             datamanager,
             include=include,

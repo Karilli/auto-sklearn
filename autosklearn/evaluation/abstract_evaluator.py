@@ -21,6 +21,7 @@ from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.automl_common.common.utils.backend import Backend
 from autosklearn.constants import (
     CLASSIFICATION_TASKS,
+    BINARY_CLASSIFICATION,
     MULTICLASS_CLASSIFICATION,
     MULTILABEL_CLASSIFICATION,
     MULTIOUTPUT_REGRESSION,
@@ -299,6 +300,13 @@ class AbstractEvaluator(object):
                 if component_name not in _addons[key].components:
                     _addons[key].add_component(component)
 
+        self.imbalanced_ratio = None
+        if self.task_type == BINARY_CLASSIFICATION:
+            _, counts = np.unique(self.datamanager.data["Y_train"], return_counts=True)
+            if len(counts) == 2:
+                c1, c2 = sorted(counts)
+                self.imbalanced_ratio = c1 / c2
+
         # Please mypy to prevent not defined attr
         self.model = self._get_model(feat_type=self.feat_type)
 
@@ -318,11 +326,13 @@ class AbstractEvaluator(object):
                     "multioutput": self.task_type == MULTIOUTPUT_REGRESSION,
                 }
             else:
+                
                 dataset_properties = {
                     "task": self.task_type,
                     "sparse": self.datamanager.info["is_sparse"] == 1,
                     "multilabel": self.task_type == MULTILABEL_CLASSIFICATION,
                     "multiclass": self.task_type == MULTICLASS_CLASSIFICATION,
+                    "imbalanced_ratio": self.imbalanced_ratio
                 }
             model = self.model_class(
                 feat_type=feat_type,

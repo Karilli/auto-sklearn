@@ -80,4 +80,7 @@ class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
             UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
             UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5)
         ])
+
+
+        # TODO: "ValueError('Expected n_neighbors <= n_samples,  but n_samples = 8, n_neighbors = 11')"
         return cs
