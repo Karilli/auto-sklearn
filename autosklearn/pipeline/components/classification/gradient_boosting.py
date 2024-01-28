@@ -25,6 +25,7 @@ class GradientBoostingClassifier(
 ):
     def __init__(
         self,
+        loss,
         learning_rate,
         min_samples_leaf,
         max_depth,
@@ -34,11 +35,12 @@ class GradientBoostingClassifier(
         early_stop,
         tol,
         scoring,
-        n_iter_no_change=10,
+        n_iter_no_change=0,
         validation_fraction=None,
         random_state=None,
         verbose=0,
     ):
+        self.loss = loss
         self.learning_rate = learning_rate
         self.max_iter = self.get_max_iter()
         self.min_samples_leaf = min_samples_leaf
@@ -94,7 +96,7 @@ class GradientBoostingClassifier(
             if check_none(self.scoring):
                 self.scoring = None
             if self.early_stop == "off":
-                self.n_iter_no_change = 100000
+                self.n_iter_no_change = 0
                 self.validation_fraction_ = None
                 self.early_stopping_ = False
             elif self.early_stop == "train":
@@ -117,6 +119,7 @@ class GradientBoostingClassifier(
 
             # initial fit of only increment trees
             self.estimator = sklearn.ensemble.HistGradientBoostingClassifier(
+                loss=self.loss,
                 learning_rate=self.learning_rate,
                 max_iter=n_iter,
                 min_samples_leaf=self.min_samples_leaf,
@@ -186,6 +189,7 @@ class GradientBoostingClassifier(
         feat_type: Optional[FEAT_TYPE_TYPE] = None, dataset_properties=None
     ):
         cs = ConfigurationSpace()
+        loss = Constant("loss", "auto")
         learning_rate = UniformFloatHyperparameter(
             name="learning_rate", lower=0.01, upper=1, default_value=0.1, log=True
         )
@@ -219,6 +223,7 @@ class GradientBoostingClassifier(
 
         cs.add_hyperparameters(
             [
+                loss,
                 learning_rate,
                 min_samples_leaf,
                 max_depth,

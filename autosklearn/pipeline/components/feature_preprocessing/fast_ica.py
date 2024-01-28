@@ -53,7 +53,7 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
                         "Bug in scikit-learn: "
                         "https://github.com/scikit-learn/scikit-learn/pull/2738"
                     )
-        self.preprocessor.fit(X)
+
         return self
 
     def transform(self, X):
@@ -88,9 +88,10 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
         algorithm = CategoricalHyperparameter(
             "algorithm", ["parallel", "deflation"], "parallel"
         )
-        # NOTE: whiten=False, means data is already whitened, whiten=True is not valid
-        whiten = CategoricalHyperparameter("whiten", ["unit-variance", "arbitrary-variance", False], "unit-variance")
+        whiten = CategoricalHyperparameter("whiten", ["False", "True"], "False")
         fun = CategoricalHyperparameter("fun", ["logcosh", "exp", "cube"], "logcosh")
         cs.add_hyperparameters([n_components, algorithm, whiten, fun])
+
+        cs.add_condition(EqualsCondition(n_components, whiten, "True"))
 
         return cs
