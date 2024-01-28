@@ -12,9 +12,7 @@ from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import BasePipeline
 from autosklearn.pipeline.components.classification import ClassifierChoice
 from autosklearn.pipeline.components.data_preprocessing import DataPreprocessorChoice
-from autosklearn.pipeline.components.data_preprocessing.balancing.weighting import (
-    Weighting,
-)
+
 from autosklearn.pipeline.components.data_preprocessing.balancing import (
     BalancingChoice,
 )
@@ -104,8 +102,8 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
         if fit_params is None:
             fit_params = {}
 
-        if self.config["balancing:__choice__"] == "weighting":
-            _init_params, _fit_params = Weighting.get_weights(
+        if self.config["balancing:strategy"] == "weighting":
+            _init_params, _fit_params = BalancingChoice.get_weights(
                 y,
                 self.config["classifier:__choice__"],
                 self.config["feature_preprocessor:__choice__"],

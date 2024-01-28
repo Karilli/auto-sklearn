@@ -13,8 +13,6 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter, CategoricalHyperparameter
-
 
 # TODO: add sampling_strategy parameter
 class TomekLinks(AutoSklearnPreprocessingAlgorithm):

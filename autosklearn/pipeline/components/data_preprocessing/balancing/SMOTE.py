@@ -15,6 +15,7 @@ from autosklearn.pipeline.constants import (
 
 from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter
 
+
 class SMOTE(AutoSklearnPreprocessingAlgorithm):
     def __init__(
             self, 

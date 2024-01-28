@@ -974,6 +974,7 @@ class AutoSklearnEstimator(BaseEstimator):
         * ``"balancing_strategy"`` - The balancing strategy used for data preprocessing.
         * ``"start_time"`` - Time the model began being optimized
         * ``"end_time"`` - Time the model ended being optimized
+        * ``"balancing"`` - The balancing preprocessors used on the data
         * ``"data_preprocessors"`` - The preprocessors used on the data
         * ``"feature_preprocessors"`` - The preprocessors for features types
 
@@ -1149,10 +1150,11 @@ class AutoSklearnEstimator(BaseEstimator):
 
             run_info.update(
                 {
+                    "balancing_strategy": run_config.get("balancing:strategy", None),
                     "balancing": [
                         value
                         for key, value in run_config.items()
-                        if "balancing" in key and "__choice__" in key
+                        if ("balancing" in key and "__choice__" in key)
                     ],
                     "type": run_config[f"{model_type}:__choice__"],
                     "data_preprocessors": [
@@ -1332,6 +1334,7 @@ class AutoSklearnEstimator(BaseEstimator):
                 "data_preprocessors",
                 "feature_preprocessors",
                 "balancing",
+                "balancing_strategy",
                 "config_origin",
             ]
         )
