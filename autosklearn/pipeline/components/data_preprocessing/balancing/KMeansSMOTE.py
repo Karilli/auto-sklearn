@@ -20,6 +20,11 @@ from ConfigSpace.hyperparameters import (
     CategoricalHyperparameter
 )
 
+
+
+# TODO: This error message appears a lot: RuntimeError: No clusters found with sufficient 
+# samples of class 0.0. Try lowering the cluster_balance_threshold or increasing the number of clusters.
+
 class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
     def __init__(
             self, 

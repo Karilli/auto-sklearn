@@ -40,7 +40,16 @@ def add_preprocessor(preprocessor: Type[AutoSklearnPreprocessingAlgorithm]) -> N
 
 
 class BalancingChoice(AutoSklearnChoice):
-    def __init__(self, strategy="none", random_state=None):
+    # TODO: NOTE: This is a disgusting hack, !it will probably break in multithreaded context!
+    # We have to create weights for classifiers and feature_preprocessor before we run Pipeline.fit()
+    # in order to pass them as fit_params. But if we create weights before we run the Pipeline, methods 
+    # from imblearn will invalidate them, by tempering with labels. 
+    # The solution is to pass a pointer which can be later modified during the Pipeline evaluation.
+    # Alternative solution is to have only single step Balancing, i.e. either weighting, or resampling. 
+    # Instead of two step Balancing, i.e. resampling and then also weighting.
+    SAMPLE_WEIGHTS=None
+    CLASS_WEIGHTS=None
+    def __init__(self, strategy="none", feat_type=None, dataset_properties=None, random_state=None):
         self.strategy = strategy
         self.random_state = random_state
 
@@ -165,30 +174,52 @@ class BalancingChoice(AutoSklearnChoice):
             CategoricalHyperparameter("strategy", ["none", "weighting"], "none")
         )
         return cs
+    
+    def set_hyperparameters(
+        self,
+        configuration,
+        feat_type: Optional[FEAT_TYPE_TYPE] = None,
+        init_params=None,
+    ):
+        new_params = {}
+
+        params = configuration.get_dictionary()
+        choice = params["__choice__"]
+        del params["__choice__"]
+
+        for param, value in params.items():
+            if param == "strategy":
+                continue
+            param = param.replace(choice, "").replace(":", "")
+            new_params[param] = value
+
+        if init_params is not None:
+            for param, value in init_params.items():
+                assert param != "strategy"
+                param = param.replace(choice, "").replace(":", "")
+                new_params[param] = value
+
+        new_params["random_state"] = self.random_state
+
+        self.new_params = new_params
+        self.choice = self.get_components()[choice](**new_params)
+
+        return self
 
     def fit_resample(self, X, y):
-        return self.choice.fit_resample(X, y)
+        X, y = self.choice.fit_resample(X, y)
+        self.set_weights(y)
+        return X, y
 
-    @staticmethod
-    def get_weights(
+    @classmethod
+    def prepare_params_for_weighting(
+        cls,
         Y: PIPELINE_DATA_DTYPE,
         classifier: BaseEstimator,
         preprocessor: BaseEstimator,
-        init_params: Optional[Dict[str, Any]],
-        fit_params: Optional[Dict[str, Any]],
-    ) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
-        if init_params is None:
-            init_params = {}
-
-        if fit_params is None:
-            fit_params = {}
-
-        # Classifiers which require sample weights:
-        # We can have adaboost in here, because in the fit method,
-        # the sample weights are normalized:
-        # https://github.com/scikit-learn/scikit-learn/blob/0.15.X/sklearn/ensemble/weight_boosting.py#L121
-        # Have RF and ET in here because they emit a warning if class_weights
-        #  are used together with warmstarts
+        init_params: Dict[str, Any],
+        fit_params: Dict[str, Any],
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         clf_ = [
             "adaboost",
             "random_forest",
@@ -204,26 +235,14 @@ class BalancingChoice(AutoSklearnChoice):
                 Y_ = np.sum(Y * offsets, axis=1)
             else:
                 Y_ = Y
-
-            unique, counts = np.unique(Y_, return_counts=True)
-            # This will result in an average weight of 1!
-            cw = 1 / (counts / np.sum(counts)) / 2
-            if len(Y.shape) == 2:
-                cw /= Y.shape[1]
-
-            sample_weights = np.ones(Y_.shape)
-
-            for i, ue in enumerate(unique):
-                mask = Y_ == ue
-                sample_weights[mask] *= cw[i]
-
+            cls.SAMPLE_WEIGHTS = np.ones(Y_.shape)
             if classifier in clf_:
-                fit_params["classifier:sample_weight"] = sample_weights
+                fit_params["classifier:sample_weight"] = cls.SAMPLE_WEIGHTS
             if preprocessor in pre_:
-                fit_params["feature_preprocessor:sample_weight"] = sample_weights
+                fit_params["feature_preprocessor:sample_weight"] = cls.SAMPLE_WEIGHTS
+        else:
+            cls.SAMPLE_WEIGHTS = None
 
-        # Classifiers which can adjust sample weights themselves via the
-        # argument `class_weight`
         clf_ = ["decision_tree", "liblinear_svc", "libsvm_svc"]
         pre_ = ["liblinear_svc_preprocessor", "extra_trees_preproc_for_classification"]
         if classifier in clf_:
@@ -233,19 +252,38 @@ class BalancingChoice(AutoSklearnChoice):
 
         clf_ = ["ridge"]
         if classifier in clf_:
-            class_weights = {}
+            cls.CLASS_WEIGHTS = {}
+            init_params["classifier:class_weight"] = cls.CLASS_WEIGHTS
+        else:
+            cls.CLASS_WEIGHTS = None
 
+        return init_params, fit_params
+
+    def set_weights(self, Y: PIPELINE_DATA_DTYPE):
+        if self.SAMPLE_WEIGHTS is not None:
+            if len(Y.shape) > 1:
+                offsets = [2**i for i in range(Y.shape[1])]
+                Y_ = np.sum(Y * offsets, axis=1)
+            else:
+                Y_ = Y
+
+            unique, counts = np.unique(Y_, return_counts=True)
+            # This will result in an average weight of 1!
+            cw = 1 / (counts / np.sum(counts)) / 2
+            if len(Y.shape) == 2:
+                cw /= Y.shape[1]
+
+            for i, ue in enumerate(unique):
+                mask = Y_ == ue
+                self.SAMPLE_WEIGHTS[mask] *= cw[i]
+
+        if self.CLASS_WEIGHTS is not None:
             unique, counts = np.unique(Y, return_counts=True)
             cw = 1.0 / counts
             cw = cw / np.mean(cw)
 
             for i, ue in enumerate(unique):
-                class_weights[ue] = cw[i]
-
-            if classifier in clf_:
-                init_params["classifier:class_weight"] = class_weights
-
-        return init_params, fit_params
+                self.CLASS_WEIGHTS[ue] = cw[i]
 
     def __repr__(self):
         return f"BalancingChoice(weighting={self.strategy == 'weighting'}, resampling={self.choice})" 

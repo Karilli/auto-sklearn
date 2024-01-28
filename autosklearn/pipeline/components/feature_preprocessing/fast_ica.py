@@ -88,10 +88,9 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
         algorithm = CategoricalHyperparameter(
             "algorithm", ["parallel", "deflation"], "parallel"
         )
-        whiten = CategoricalHyperparameter("whiten", ["False", "True"], "False")
+        # NOTE: whiten=False, means data is already whitened, whiten=True is not valid
+        whiten = CategoricalHyperparameter("whiten", ["unit-variance", "arbitrary-variance", False], "unit-variance")
         fun = CategoricalHyperparameter("fun", ["logcosh", "exp", "cube"], "logcosh")
         cs.add_hyperparameters([n_components, algorithm, whiten, fun])
-
-        cs.add_condition(EqualsCondition(n_components, whiten, "True"))
 
         return cs
