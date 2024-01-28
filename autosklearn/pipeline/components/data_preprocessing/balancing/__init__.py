@@ -81,10 +81,8 @@ class BalancingChoice(AutoSklearnChoice):
                     )
 
         components_dict = OrderedDict()
-        # TODO: prevent over_samplers to get into hyper_parameter_space
-        # if the ratio is relatively high
-        # if 1 / 2 < dataset_properties["imbalanced_ratio"]:
-        #     return components_dict
+        # TODO: Maybe prevent some or all balancing methods to get into hyper_parameter_space
+        # if the dataset_properties["imbalanced_ratio"] is relatively high?
 
         for name in available_comp:
             if include is not None and name not in include:
@@ -145,7 +143,7 @@ class BalancingChoice(AutoSklearnChoice):
             raise ValueError("No preprocessors found, please add no_preprocessing")
 
         if default is None:
-            defaults = ["no_preprocessing", "SMOTETomek", "SMOTEENN", "SVMSMOTE", "EditedNearestNeighbours"]
+            defaults = ["EditedNearestNeighbours", "SVMSMOTE", "no_preprocessing"]
             for default_ in defaults:
                 if default_ in available_preprocessors:
                     default = default_
