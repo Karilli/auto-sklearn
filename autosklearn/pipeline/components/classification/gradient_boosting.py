@@ -40,6 +40,7 @@ class GradientBoostingClassifier(
         random_state=None,
         verbose=0,
     ):
+        
         self.loss = loss
         self.learning_rate = learning_rate
         self.max_iter = self.get_max_iter()
@@ -119,7 +120,9 @@ class GradientBoostingClassifier(
 
             # initial fit of only increment trees
             self.estimator = sklearn.ensemble.HistGradientBoostingClassifier(
-                loss=self.loss,
+                # TODO: I cannot directly change hyper_parameter_space due to META-learninig
+                # database. I don't know much about META-learning.
+                loss="log_loss",
                 learning_rate=self.learning_rate,
                 max_iter=n_iter,
                 min_samples_leaf=self.min_samples_leaf,

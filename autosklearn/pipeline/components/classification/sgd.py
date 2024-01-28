@@ -88,7 +88,9 @@ class SGD(
             self.tol = float(self.tol)
 
             self.estimator = SGDClassifier(
-                loss=self.loss,
+                # TODO: I cannot directly change hyper_parameter_space due to META-learninig
+                # database. I don't know much about META-learning.
+                loss="log_loss" if self.loss == "log" else self.loss,
                 penalty=self.penalty,
                 alpha=self.alpha,
                 fit_intercept=self.fit_intercept,

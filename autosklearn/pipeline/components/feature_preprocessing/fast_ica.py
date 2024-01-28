@@ -37,7 +37,9 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
             n_components=self.n_components,
             algorithm=self.algorithm,
             fun=self.fun,
-            whiten=self.whiten,
+            # TODO: I cannot remove from hyper_parameter_space due to META-learninig
+            # database. I don't know much about META-learning.
+            whiten="unit-variance" if self.whiten else self.whiten,
             random_state=self.random_state,
         )
         # Make the RuntimeWarning an Exception!
@@ -54,6 +56,7 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
                         "https://github.com/scikit-learn/scikit-learn/pull/2738"
                     )
 
+        self.preprocessor.fit(X)
         return self
 
     def transform(self, X):
@@ -88,10 +91,13 @@ class FastICA(AutoSklearnPreprocessingAlgorithm):
         algorithm = CategoricalHyperparameter(
             "algorithm", ["parallel", "deflation"], "parallel"
         )
+
         whiten = CategoricalHyperparameter("whiten", ["False", "True"], "False")
         fun = CategoricalHyperparameter("fun", ["logcosh", "exp", "cube"], "logcosh")
-        cs.add_hyperparameters([n_components, algorithm, whiten, fun])
+
+        cs.add_hyperparameters([n_components, algorithm, whiten, fun, whiten_variance])
 
         cs.add_condition(EqualsCondition(n_components, whiten, "True"))
 
+        
         return cs

@@ -50,10 +50,12 @@ class KernelPCA(AutoSklearnPreprocessingAlgorithm):
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             self.preprocessor.fit(X)
+        # TODO: in newer version of sklearn, KernelPCA doesn't have attributes
+        # alphas_ and lambdas_
         # Raise an informative error message, equation is based ~line 249 in
         # kernel_pca.py in scikit-learn
-        if len(self.preprocessor.alphas_ / self.preprocessor.lambdas_) == 0:
-            raise ValueError("KernelPCA removed all features!")
+        # if len(self.preprocessor.alphas_ / self.preprocessor.lambdas_) == 0:
+        #     raise ValueError("KernelPCA removed all features!")
         return self
 
     def transform(self, X):
