@@ -90,7 +90,7 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, default_value=1.0, log=False), 
+            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False),  
 
             UniformIntegerHyperparameter("enn_n_neighbors", 3, 10, default_value=3),
             CategoricalHyperparameter("enn_kind_sel", ["all", "mode"], "all"),

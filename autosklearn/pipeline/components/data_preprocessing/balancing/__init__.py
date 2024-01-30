@@ -208,7 +208,15 @@ class BalancingChoice(AutoSklearnChoice):
         return self
 
     def fit_resample(self, X, y):
-        X, y = self.choice.fit_resample(X, y)
+        try:
+            X, y = self.choice.fit_resample(X, y)
+        except ValueError as e:
+            if str(e) == 'The specified ratio required to remove samples from the minority class while trying to generate new samples. Please increase the ratio.' or \
+                str(e) == "ValueError('The specified ratio required to remove samples from the minority class while trying to generate new samples. Please increase the ratio.')":
+                _, (c1, c2) = np.unique(y, return_counts=True)
+                (c1, c2) = sorted((c1, c2))
+                raise ValueError(f"ratio={c1 / c2}, sampling_strategy={self.choice.sampling_strategy}")
+            raise e
         self.set_weights(y)
         return X, y
 
