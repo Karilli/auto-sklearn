@@ -68,7 +68,7 @@ class RandomUnderSampler(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, 1.0, log=False), 
+            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
             CategoricalHyperparameter("replacement", [True, False], False)
         ])
         return cs

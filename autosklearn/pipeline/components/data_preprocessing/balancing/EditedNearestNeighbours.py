@@ -16,7 +16,8 @@ from autosklearn.pipeline.constants import (
 
 from ConfigSpace.hyperparameters import (
     CategoricalHyperparameter,
-    UniformIntegerHyperparameter
+    UniformIntegerHyperparameter,
+    UniformFloatHyperparameter
 )
 
 
@@ -24,10 +25,12 @@ from ConfigSpace.hyperparameters import (
 class EditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
     def __init__(
             self, 
+            sampling_strategy=1.0,
             n_neighbors=5,
             kind_sel="all",
             random_state=None
         ) -> None:
+        self.sampling_strategy = sampling_strategy
         self.n_neighbors = n_neighbors
         self.kind_sel = kind_sel
         self.random_state = random_state
@@ -35,7 +38,10 @@ class EditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
     def fit_resample(
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
+        (l1, l2), (c1, c2) = np.unique(y, return_counts=True)
+        (c1, l1), (c2, l2) = sorted(((c1, l1), (c2, l2)))
         return imblearn.EditedNearestNeighbours(
+            sampling_strategy=lambda: {l1: c1, l2: min(c2, int(c1 / self.sampling_strategy))},
             n_neighbors=self.n_neighbors,
             kind_sel=self.kind_sel,
         ).fit_resample(X, y)
@@ -73,6 +79,7 @@ class EditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
+            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False),  
             UniformIntegerHyperparameter("n_neighbors", 3, 10, default_value=3),
             CategoricalHyperparameter("kind_sel", ["all", "mode"], "all"),
         ])

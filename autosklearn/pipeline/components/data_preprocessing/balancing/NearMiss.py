@@ -76,7 +76,7 @@ class NearMiss(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", 0.0, 1.0, 1.0, log=False), 
+            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
             UniformIntegerHyperparameter("n_neighbors", 3, 10, default_value=3),
             UniformIntegerHyperparameter("n_neighbors_ver3", 3, 10, default_value=3),
             CategoricalHyperparameter("version", [1, 2, 3], 1),
