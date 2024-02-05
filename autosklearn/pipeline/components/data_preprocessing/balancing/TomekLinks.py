@@ -14,22 +14,19 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter
+from ConfigSpace.hyperparameters import CategoricalHyperparameter
 
 
-# TODO: add sampling_strategy parameter
 class TomekLinks(AutoSklearnPreprocessingAlgorithm):
-    def __init__(self, sampling_strategy=1.0, random_state=None) -> None:
-        self.sampling_strategy = sampling_strategy
+    def __init__(self, sampling_strategy="not minority", random_state=None) -> None:
         self.random_state = random_state
+        self.sampling_strategy = sampling_strategy
 
     def fit_resample(
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
-        (l1, l2), (c1, c2) = np.unique(y, return_counts=True)
-        (c1, l1), (c2, l2) = sorted(((c1, l1), (c2, l2)))
         return imblearn.TomekLinks(
-            sampling_strategy=lambda: {l1: c1, l2: min(c2, int(c1 / self.sampling_strategy))},
+            sampling_strategy=self.sampling_strategy
         ).fit_resample(X, y)
 
     @staticmethod
@@ -65,6 +62,6 @@ class TomekLinks(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
+            CategoricalHyperparameter("sampling_strategy", ["not minority", "majority", "all"], "not minority"),
         ])
         return cs

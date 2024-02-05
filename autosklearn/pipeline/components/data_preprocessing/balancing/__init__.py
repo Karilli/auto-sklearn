@@ -143,7 +143,7 @@ class BalancingChoice(AutoSklearnChoice):
             raise ValueError("No preprocessors found, please add no_preprocessing")
 
         if default is None:
-            defaults = ["EditedNearestNeighbours", "SVMSMOTE", "no_preprocessing"]
+            defaults = ["no_preprocessing", "SVMSMOTE", "EditedNearestNeighbours"]
             for default_ in defaults:
                 if default_ in available_preprocessors:
                     default = default_
@@ -210,13 +210,18 @@ class BalancingChoice(AutoSklearnChoice):
     def fit_resample(self, X, y):
         try:
             X, y = self.choice.fit_resample(X, y)
+        # TODO: How to set up sample_strategy in configuration spaces of resamplers to completely avoid these errors?
+        # TODO: How to set up KMeansSMOTE n_clusters and cluster_balance_threshold parameters?
         except ValueError as e:
             if str(e) == 'The specified ratio required to remove samples from the minority class while trying to generate new samples. Please increase the ratio.' or \
-                str(e) == "ValueError('The specified ratio required to remove samples from the minority class while trying to generate new samples. Please increase the ratio.')":
+                str(e) == 'No samples will be generated with the provided ratio settings.':
                 _, (c1, c2) = np.unique(y, return_counts=True)
                 (c1, c2) = sorted((c1, c2))
-                raise ValueError(f"ratio={c1 / c2}, sampling_strategy={self.choice.sampling_strategy}")
+                raise ValueError(f"Error with sample_strategy: ratio={c1 / c2}, sampling_strategy={self.choice.sampling_strategy}")
             raise e
+        except RuntimeError as e:
+            if str(e) == 'No clusters found with sufficient samples of class 0.0. Try lowering the cluster_balance_threshold or increasing the number of clusters.':
+                raise RuntimeError("Error with KMeansSMOTE n_clusters and cluster_balance_threshold")
         self.set_weights(y)
         return X, y
 

@@ -30,6 +30,8 @@ class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
             self, 
             sampling_strategy=1.0, 
             k_neighbors=2,
+            cluster_balance_threshold=1.0,
+            density_exponent=1.0,
 
             n_clusters=8,
             init="k-means++",
@@ -92,8 +94,10 @@ class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
         cs.add_hyperparameters([
             UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
             UniformIntegerHyperparameter("k_neighbors", 2, 10, default_value=2),
+            UniformFloatHyperparameter("cluster_balance_threshold", 0.0, 1.0, default_value=dataset_properties["imbalanced_ratio"], log=False), 
+            UniformFloatHyperparameter("density_exponent", 1.0, 2.0, default_value=1.0, log=False), 
 
-            UniformIntegerHyperparameter("n_clusters", 2, 20, default_value=8),
+            UniformIntegerHyperparameter("n_clusters", 10, 30, default_value=20),
             CategoricalHyperparameter("init", ["k-means++", "random"], "k-means++"),
         ])
         return cs

@@ -26,7 +26,7 @@ from ConfigSpace.hyperparameters import (
 class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
     def __init__(
         self, 
-        sampling_strategy=1.0, 
+        smote_sampling_strategy=1.0, 
 
         enn_n_neighbors=3,
         enn_kind_sel="all",
@@ -35,7 +35,7 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
 
         random_state=None
     ) -> None:
-        self.sampling_strategy = sampling_strategy
+        self.smote_sampling_strategy = smote_sampling_strategy
         self.random_state = random_state
         self.enn_n_neighbors = enn_n_neighbors
         self.enn_kind_sel = enn_kind_sel
@@ -45,8 +45,8 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
         return imblearn.SMOTEENN(
-            sampling_strategy=self.sampling_strategy,
             smote=SMOTE(
+                sampling_strategy=self.smote_sampling_strategy,
                 k_neighbors=self.smote_k_neighbors,
                 random_state=self.random_state
             ),
@@ -90,12 +90,10 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False),  
+            UniformFloatHyperparameter("smote_sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False),  
+            UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5),
 
             UniformIntegerHyperparameter("enn_n_neighbors", 3, 10, default_value=3),
             CategoricalHyperparameter("enn_kind_sel", ["all", "mode"], "all"),
-
-            UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5)
         ])
-
         return cs
