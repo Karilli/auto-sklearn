@@ -24,11 +24,13 @@ from ConfigSpace.hyperparameters import (
 class RepeatedEditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
     def __init__(
             self, 
+            sampling_strategy="not minority",
             n_neighbors=5,
             kind_sel="all",
             max_iter=100,
             random_state=None
         ) -> None:
+        self.sampling_strategy = sampling_strategy
         self.max_iter = max_iter
         self.n_neighbors = n_neighbors
         self.kind_sel = kind_sel
@@ -38,6 +40,7 @@ class RepeatedEditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
         self, X: PIPELINE_DATA_DTYPE, y: PIPELINE_DATA_DTYPE
     ) -> Tuple[PIPELINE_DATA_DTYPE, PIPELINE_DATA_DTYPE]:
         return imblearn.RepeatedEditedNearestNeighbours(
+            sampling_strategy=self.sampling_strategy,
             n_neighbors=self.n_neighbors,
             kind_sel=self.kind_sel,
             max_iter=self.max_iter,
@@ -76,6 +79,7 @@ class RepeatedEditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         cs.add_hyperparameters([
+            CategoricalHyperparameter("sampling_strategy", ["not minority", "majority", "all"], "not minority"),
             UniformIntegerHyperparameter("n_neighbors", 3, 10, default_value=3),
             UniformIntegerHyperparameter("max_iter", 1, 1000, default_value=100, log=True),
             CategoricalHyperparameter("kind_sel", ["all", "mode"], "all"),

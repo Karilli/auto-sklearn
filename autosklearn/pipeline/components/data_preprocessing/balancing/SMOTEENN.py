@@ -30,11 +30,13 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
 
         enn_n_neighbors=3,
         enn_kind_sel="all",
+        enn_sampling_strategy="not minority",
 
         smote_k_neighbors=5,
 
         random_state=None
     ) -> None:
+        self.enn_sampling_strategy = enn_sampling_strategy
         self.smote_sampling_strategy = smote_sampling_strategy
         self.random_state = random_state
         self.enn_n_neighbors = enn_n_neighbors
@@ -51,6 +53,7 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
                 random_state=self.random_state
             ),
             enn=EditedNearestNeighbours(
+                sampling_strategy=self.enn_sampling_strategy,
                 n_neighbors=self.enn_n_neighbors,
                 kind_sel=self.enn_kind_sel,
             ),
@@ -95,5 +98,6 @@ class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
 
             UniformIntegerHyperparameter("enn_n_neighbors", 3, 10, default_value=3),
             CategoricalHyperparameter("enn_kind_sel", ["all", "mode"], "all"),
+            CategoricalHyperparameter("enn_sampling_strategy", ["not minority", "majority", "all"], "not minority"),
         ])
         return cs
