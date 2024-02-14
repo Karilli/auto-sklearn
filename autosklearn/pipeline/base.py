@@ -44,7 +44,6 @@ class BasePipeline(Pipeline):
         random_state=None,
         init_params=None,
     ):
-
         self.init_params = init_params if init_params is not None else {}
         self.include = include if include is not None else {}
         self.exclude = exclude if exclude is not None else {}
@@ -137,6 +136,7 @@ class BasePipeline(Pipeline):
             key.replace(":", "__"): value for key, value in fit_params.items()
         }
         fit_params_steps = self._check_fit_params(**fit_params)
+        # assert 0, self.steps
         Xt = self._fit(X, y, **fit_params_steps)
         return Xt, fit_params_steps[self.steps[-1][0]]
 
@@ -459,7 +459,6 @@ class BasePipeline(Pipeline):
         init_params.pop("instance", None)
 
         for key, value in init_params.items():
-
             if ":" not in key:
                 raise ValueError(
                     "Unsupported argument to init_params {}."
