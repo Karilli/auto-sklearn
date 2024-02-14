@@ -20,7 +20,6 @@ from ConfigSpace.hyperparameters import (
 )
 
 
-# TODO: add sampling_strategy parameter
 class RepeatedEditedNearestNeighbours(AutoSklearnPreprocessingAlgorithm):
     def __init__(
             self, 

@@ -143,7 +143,7 @@ class BalancingChoice(AutoSklearnChoice):
             raise ValueError("No preprocessors found, please add no_preprocessing")
 
         if default is None:
-            defaults = ["no_preprocessing", "SVMSMOTE", "EditedNearestNeighbours"]
+            defaults = ["no_preprocessing", "SVMSMOTE", "RepeatedEditedNearestNeighbours", "SMOTEENN", "SMOTETomek", "BorderlineSMOTE", "SMOTE", "KMeansSMOTE", "TomekLinks"]
             for default_ in defaults:
                 if default_ in available_preprocessors:
                     default = default_

@@ -22,7 +22,6 @@ from ConfigSpace.hyperparameters import (
 )
 
 
-# TODO: add sampling_strategy parameter for smote and enn
 class SMOTEENN(AutoSklearnPreprocessingAlgorithm):
     def __init__(
         self, 

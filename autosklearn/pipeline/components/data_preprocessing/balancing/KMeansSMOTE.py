@@ -21,28 +21,26 @@ from ConfigSpace.hyperparameters import (
 )
 
 
-
-# TODO: This error message appears a lot: RuntimeError: No clusters found with sufficient 
-# samples of class 0.0. Try lowering the cluster_balance_threshold or increasing the number of clusters.
-
 class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
     def __init__(
-            self, 
-            sampling_strategy=1.0, 
-            k_neighbors=2,
-            cluster_balance_threshold=1.0,
-            density_exponent=1.0,
+        self,
+        sampling_strategy=1.0, 
+        k_neighbors=2,
+        cluster_balance_threshold=1.0,
+        density_exponent=1.0,
 
-            n_clusters=8,
-            init="k-means++",
+        n_clusters=20,
+        init="k-means++",
 
-            random_state=None
-        ) -> None:
+        random_state=None
+    ) -> None:
         self.sampling_strategy = sampling_strategy
         self.k_neighbors = k_neighbors
+        self.cluster_balance_threshold = cluster_balance_threshold
+        self.density_exponent = density_exponent
+
         self.n_clusters = n_clusters
         self.init = init
-
         self.random_state = random_state
 
     def fit_resample(
@@ -52,6 +50,8 @@ class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
             sampling_strategy=self.sampling_strategy,
             k_neighbors=self.k_neighbors,
             random_state=self.random_state,
+            cluster_balance_threshold=self.cluster_balance_threshold,
+            density_exponent=self.density_exponent,
             kmeans_estimator=MiniBatchKMeans(
                 n_clusters=self.n_clusters,
                 init=self.init,

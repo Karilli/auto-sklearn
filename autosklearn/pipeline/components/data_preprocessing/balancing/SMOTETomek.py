@@ -88,5 +88,4 @@ class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
             UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5),
             CategoricalHyperparameter("tomek_sampling_strategy", ["not minority", "majority", "all"], "not minority"),
         ])
-        # TODO: "ValueError('Expected n_neighbors <= n_samples,  but n_samples = 8, n_neighbors = 11')"
         return cs
