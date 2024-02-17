@@ -501,7 +501,6 @@ class AutoSklearnEstimator(BaseEstimator):
         return self.__dict__
 
     def build_automl(self):
-
         initial_configs = self.initial_configurations_via_metalearning
         automl = self._get_automl_class()(
             temporary_directory=self.tmp_folder,
@@ -537,7 +536,6 @@ class AutoSklearnEstimator(BaseEstimator):
         return automl
 
     def fit(self, **kwargs):
-
         # Automatically set the cutoff time per task
         if self.per_run_time_limit is None:
             self.per_run_time_limit = self._n_jobs * self.time_left_for_this_task // 10
@@ -974,7 +972,6 @@ class AutoSklearnEstimator(BaseEstimator):
         * ``"balancing_strategy"`` - The balancing strategy used for data preprocessing.
         * ``"start_time"`` - Time the model began being optimized
         * ``"end_time"`` - Time the model ended being optimized
-        * ``"balancing"`` - The balancing preprocessors used on the data
         * ``"data_preprocessors"`` - The preprocessors used on the data
         * ``"feature_preprocessors"`` - The preprocessors for features types
 
@@ -1151,11 +1148,6 @@ class AutoSklearnEstimator(BaseEstimator):
             run_info.update(
                 {
                     "balancing_strategy": run_config.get("balancing:strategy", None),
-                    "balancing": [
-                        value
-                        for key, value in run_config.items()
-                        if ("balancing" in key and "__choice__" in key)
-                    ],
                     "type": run_config[f"{model_type}:__choice__"],
                     "data_preprocessors": [
                         value
@@ -1176,7 +1168,6 @@ class AutoSklearnEstimator(BaseEstimator):
             model_id,
             _,
         ), weight in self.automl_.ensemble_.get_identifiers_with_weights():
-
             # We had issues where the model's in the ensembles are not in the runhistory
             # collected. I have no clue why this is but to prevent failures, we fill
             # the values with NaN
@@ -1333,7 +1324,6 @@ class AutoSklearnEstimator(BaseEstimator):
                 "status",
                 "data_preprocessors",
                 "feature_preprocessors",
-                "balancing",
                 "balancing_strategy",
                 "config_origin",
             ]

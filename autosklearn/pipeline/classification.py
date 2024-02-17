@@ -12,10 +12,7 @@ from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import BasePipeline
 from autosklearn.pipeline.components.classification import ClassifierChoice
 from autosklearn.pipeline.components.data_preprocessing import DataPreprocessorChoice
-
-from autosklearn.pipeline.components.data_preprocessing.balancing import (
-    BalancingChoice,
-)
+from autosklearn.pipeline.components.data_preprocessing.balancing import BalancingChoice
 from autosklearn.pipeline.components.feature_preprocessing import (
     FeaturePreprocessorChoice,
 )
@@ -98,12 +95,12 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
         )
 
     def fit_transformer(self, X, y, fit_params=None):
-
         if fit_params is None:
             fit_params = {}
 
         if self.config["balancing:strategy"] == "weighting":
-            _init_params, _fit_params = BalancingChoice.prepare_params_for_weighting(
+            _init_params, _fit_params = BalancingChoice.get_weights(
+                y,
                 self.config["classifier:__choice__"],
                 self.config["feature_preprocessor:__choice__"],
                 {},
@@ -375,12 +372,12 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                     ),
                 ],
                 [
-                    "balancing", 
+                    "balancing",
                     BalancingChoice(
-                    feat_type=feat_type,
-                    dataset_properties=default_dataset_properties,
-                    random_state=self.random_state
-                    )
+                        feat_type=feat_type,
+                        dataset_properties=default_dataset_properties,
+                        random_state=self.random_state,
+                    ),
                 ],
                 [
                     "feature_preprocessor",

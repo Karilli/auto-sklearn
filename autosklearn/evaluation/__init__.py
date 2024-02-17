@@ -50,7 +50,6 @@ from autosklearn.util.parallel import preload_modules
 def fit_predict_try_except_decorator(
     ta: Callable, queue: multiprocessing.Queue, cost_for_crash: float, **kwargs: Any
 ) -> None:
-
     try:
         return ta(queue=queue, **kwargs)
     except Exception as e:
@@ -189,7 +188,7 @@ class ExecuteTaFuncWithQueue(AbstractTAFunc):
             eval_function = autosklearn.evaluation.test_evaluator.eval_t
             output_y_hat_optimization = False
         else:
-            raise ValueError("Unknown resampling strategy %s" % resampling_strategy)
+            raise ValueError("Unknown resampling  %s" % resampling_strategy)
 
         self.worst_possible_result = cost_for_crash
 
@@ -330,7 +329,6 @@ class ExecuteTaFuncWithQueue(AbstractTAFunc):
         float,
         Dict[str, Union[int, float, str, Dict, List, Tuple]],
     ]:
-
         # Additional information of each of the tae executions
         # Defined upfront for mypy
         additional_run_info: TYPE_ADDITIONAL_INFO = {}

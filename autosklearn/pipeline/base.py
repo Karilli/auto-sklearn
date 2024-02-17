@@ -136,7 +136,6 @@ class BasePipeline(Pipeline):
             key.replace(":", "__"): value for key, value in fit_params.items()
         }
         fit_params_steps = self._check_fit_params(**fit_params)
-        # assert 0, self.steps
         Xt = self._fit(X, y, **fit_params_steps)
         return Xt, fit_params_steps[self.steps[-1][0]]
 

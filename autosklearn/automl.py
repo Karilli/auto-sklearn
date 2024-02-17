@@ -37,6 +37,7 @@ import sklearn.utils
 from ConfigSpace.configuration_space import Configuration, ConfigurationSpace
 from ConfigSpace.read_and_write import json as cs_json
 from dask.distributed import Client
+from imblearn.pipeline import Pipeline
 from scipy.sparse import spmatrix
 from sklearn.base import BaseEstimator
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -47,7 +48,6 @@ from sklearn.model_selection._split import (
     BaseShuffleSplit,
     _RepeatedSplits,
 )
-from imblearn.pipeline import Pipeline
 from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_is_fitted
 from smac.callbacks import IncorporateRunResultCallback
@@ -779,7 +779,6 @@ class AutoML(BaseEstimator):
             # dummy predictions are actually included in the ensemble even if
             # calculating the meta-features takes very long
             with self._stopwatch.time("Run Ensemble Builder"):
-
                 elapsed_time = self._stopwatch.time_since(self._dataset_name, "start")
 
                 time_left_for_ensembles = max(0, self._time_for_task - elapsed_time)
@@ -1141,7 +1140,7 @@ class AutoML(BaseEstimator):
             and self._ensemble_class is not None
         ):
             raise ValueError(
-                "Resampling strategy %s cannot be used "
+                "Resampling  %s cannot be used "
                 "together with ensembles." % self._resampling_strategy
             )
 
@@ -2287,7 +2286,6 @@ class AutoML(BaseEstimator):
 
 
 class AutoMLClassifier(AutoML):
-
     _task_mapping = {
         "multilabel-indicator": MULTILABEL_CLASSIFICATION,
         "multiclass": MULTICLASS_CLASSIFICATION,
@@ -2377,7 +2375,6 @@ class AutoMLClassifier(AutoML):
 
 
 class AutoMLRegressor(AutoML):
-
     _task_mapping = {
         "continuous-multioutput": MULTIOUTPUT_REGRESSION,
         "continuous": REGRESSION,

@@ -14,10 +14,9 @@ from autosklearn.pipeline.constants import (
 )
 
 
-class NoPreprocessing(AutoSklearnPreprocessingAlgorithm):
+class Weighting(AutoSklearnPreprocessingAlgorithm):
     def __init__(self, **kwargs):
-        """This preprocessors does not change the data"""
-        # Some internal checks makes sure parameters are set
+        # Some internal checks make sure parameters are set
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -31,8 +30,8 @@ class NoPreprocessing(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> Dict[str, Optional[Union[str, int, bool, Tuple]]]:
         return {
-            "shortname": "no_preprocessing",
-            "name": "NoPreprocessing",
+            "shortname": "weighting",
+            "name": "weighting",
             "handles_missing_values": True,
             "handles_nominal_values": True,
             "handles_numerical_features": True,
