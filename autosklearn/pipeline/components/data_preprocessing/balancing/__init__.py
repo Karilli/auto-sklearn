@@ -129,21 +129,22 @@ class BalancingChoice(AutoSklearnChoice):
         if dataset_properties is None:
             dataset_properties = {}
 
+        # if "imbalanced_ratio" in dataset_properties and
+        # 0.98 < dataset_properties["imbalanced_ratio"]:
+        #     strategy = CategoricalHyperparameter(
+        #         "strategy", ["none"], default_value="none"
+        #     )
+        #     cs = ConfigurationSpace()
+        #     cs.add_hyperparameter(strategy)
+        #     return cs
+
         # Compile a list of legal resamplers for this problemm, 0 is allowed
         available_components = self.get_available_components(
             dataset_properties=dataset_properties, include=include, exclude=exclude
         )
 
         if default is None:
-            defaults = [
-                "none",
-                "weighting",
-                "SVMSMOTE",
-                "BorderlineSMOTE",
-                "RepeatedEditedNearestNeighbours",
-                "SMOTEENN",
-                "SMOTETomek",
-            ] + list(available_components)
+            defaults = ["none", "SVMSMOTE", "weighting"] + list(available_components)
             for default_ in defaults:
                 if default_ in available_components:
                     default = default_
@@ -210,12 +211,13 @@ class BalancingChoice(AutoSklearnChoice):
                 or str(e)
                 == "No samples will be generated with the provided ratio settings."
             ):
-                _, (c1, c2) = np.unique(y, return_counts=True)
-                (c1, c2) = sorted((c1, c2))
-                raise ValueError(
-                    f"Error with sample_strategy: ratio={c1 / c2}, "
-                    f"sampling_strategy={self.choice.sampling_strategy}"
-                )
+                # _, (c1, c2) = np.unique(y, return_counts=True)
+                # (c1, c2) = sorted((c1, c2))
+                # raise ValueError(
+                #     f"Error with sample_strategy: ratio={c1 / c2}, "
+                #     f"sampling_strategy={self.choice.sampling_strategy}"
+                # )
+                return X, y
             raise e
         except RuntimeError as e:
             if (

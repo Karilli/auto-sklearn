@@ -1,7 +1,13 @@
 from typing import Dict, Optional, Tuple, Union
+
 import imblearn.over_sampling as imblearn
-from sklearn.cluster import MiniBatchKMeans
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
+from sklearn.cluster import MiniBatchKMeans
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -14,25 +20,17 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-    UniformIntegerHyperparameter,
-    CategoricalHyperparameter
-)
-
 
 class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
     def __init__(
         self,
-        sampling_strategy=1.0, 
+        sampling_strategy=1.0,
         k_neighbors=2,
         cluster_balance_threshold=1.0,
         density_exponent=1.0,
-
         n_clusters=20,
         init="k-means++",
-
-        random_state=None
+        random_state=None,
     ) -> None:
         self.sampling_strategy = sampling_strategy
         self.k_neighbors = k_neighbors
@@ -55,8 +53,8 @@ class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
             kmeans_estimator=MiniBatchKMeans(
                 n_clusters=self.n_clusters,
                 init=self.init,
-                random_state=self.random_state
-            )
+                random_state=self.random_state,
+            ),
         ).fit_resample(X, y)
 
     @staticmethod
@@ -91,13 +89,28 @@ class KMeansSMOTE(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
-            UniformIntegerHyperparameter("k_neighbors", 2, 10, default_value=2),
-            UniformFloatHyperparameter("cluster_balance_threshold", 0.0, 1.0, default_value=dataset_properties["imbalanced_ratio"], log=False), 
-            UniformFloatHyperparameter("density_exponent", 1.0, 2.0, default_value=1.0, log=False), 
-
-            UniformIntegerHyperparameter("n_clusters", 10, 30, default_value=20),
-            CategoricalHyperparameter("init", ["k-means++", "random"], "k-means++"),
-        ])
+        cs.add_hyperparameters(
+            [
+                UniformFloatHyperparameter(
+                    "sampling_strategy",
+                    min(0.99999, dataset_properties["imbalanced_ratio"] + 0.01),
+                    1.0,
+                    default_value=1.0,
+                    log=False,
+                ),
+                UniformIntegerHyperparameter("k_neighbors", 2, 10, default_value=2),
+                UniformFloatHyperparameter(
+                    "cluster_balance_threshold",
+                    0.0,
+                    1.0,
+                    default_value=dataset_properties["imbalanced_ratio"],
+                    log=False,
+                ),
+                UniformFloatHyperparameter(
+                    "density_exponent", 1.0, 2.0, default_value=1.0, log=False
+                ),
+                UniformIntegerHyperparameter("n_clusters", 10, 30, default_value=20),
+                CategoricalHyperparameter("init", ["k-means++", "random"], "k-means++"),
+            ]
+        )
         return cs

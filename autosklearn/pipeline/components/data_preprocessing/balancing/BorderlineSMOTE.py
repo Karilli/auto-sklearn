@@ -1,6 +1,12 @@
 from typing import Dict, Optional, Tuple, Union
+
 import imblearn.over_sampling as imblearn
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -13,21 +19,16 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-    UniformIntegerHyperparameter,
-    CategoricalHyperparameter
-)
 
 class BorderlineSMOTE(AutoSklearnPreprocessingAlgorithm):
     def __init__(
-            self, 
-            sampling_strategy=1.0, 
-            k_neighbors=5, 
-            m_neighbors=10,
-            kind='borderline-1',
-            random_state=None
-        ) -> None:
+        self,
+        sampling_strategy=1.0,
+        k_neighbors=5,
+        m_neighbors=10,
+        kind="borderline-1",
+        random_state=None,
+    ) -> None:
         self.sampling_strategy = sampling_strategy
         self.k_neighbors = k_neighbors
         self.m_neighbors = m_neighbors
@@ -77,10 +78,20 @@ class BorderlineSMOTE(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
-            UniformIntegerHyperparameter("k_neighbors", 3, 10, default_value=5),
-            UniformIntegerHyperparameter("m_neighbors", 3, 10, default_value=10),
-            CategoricalHyperparameter("kind", ["borderline-1", "borderline-2"], "borderline-1")
-        ])
+        cs.add_hyperparameters(
+            [
+                UniformFloatHyperparameter(
+                    "sampling_strategy",
+                    min(0.99999, dataset_properties["imbalanced_ratio"] + 0.01),
+                    1.0,
+                    default_value=1.0,
+                    log=False,
+                ),
+                UniformIntegerHyperparameter("k_neighbors", 3, 10, default_value=5),
+                UniformIntegerHyperparameter("m_neighbors", 3, 10, default_value=10),
+                CategoricalHyperparameter(
+                    "kind", ["borderline-1", "borderline-2"], "borderline-1"
+                ),
+            ]
+        )
         return cs

@@ -1,6 +1,11 @@
 from typing import Dict, Optional, Tuple, Union
+
 import imblearn.over_sampling as imblearn
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import (
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -13,15 +18,9 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter, UniformIntegerHyperparameter
 
 class ADASYN(AutoSklearnPreprocessingAlgorithm):
-    def __init__(
-            self, 
-            sampling_strategy=1.0, 
-            n_neighbors=5, 
-            random_state=None
-        ) -> None:
+    def __init__(self, sampling_strategy=1.0, n_neighbors=5, random_state=None) -> None:
         self.sampling_strategy = sampling_strategy
         self.n_neighbors = n_neighbors
         self.random_state = random_state
@@ -32,7 +31,7 @@ class ADASYN(AutoSklearnPreprocessingAlgorithm):
         return imblearn.ADASYN(
             sampling_strategy=self.sampling_strategy,
             n_neighbors=self.n_neighbors,
-            random_state=self.random_state
+            random_state=self.random_state,
         ).fit_resample(X, y)
 
     @staticmethod
@@ -69,8 +68,16 @@ class ADASYN(AutoSklearnPreprocessingAlgorithm):
         assert "imbalanced_ratio" in dataset_properties, dataset_properties
 
         cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
-            UniformIntegerHyperparameter("n_neighbors", 3, 10, default_value=5)
-        ])
+        cs.add_hyperparameters(
+            [
+                UniformFloatHyperparameter(
+                    "sampling_strategy",
+                    min(0.99999, dataset_properties["imbalanced_ratio"] + 0.01),
+                    1.0,
+                    default_value=1.0,
+                    log=False,
+                ),
+                UniformIntegerHyperparameter("n_neighbors", 3, 10, default_value=5),
+            ]
+        )
         return cs

@@ -1,7 +1,13 @@
 from typing import Dict, Optional, Tuple, Union
+
 import imblearn.under_sampling as imblearn
-from sklearn.cluster import KMeans
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
+from sklearn.cluster import KMeans
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -14,26 +20,19 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-    CategoricalHyperparameter,
-    UniformIntegerHyperparameter
-)
 
 class ClusterCentroids(AutoSklearnPreprocessingAlgorithm):
     def __init__(
-            self, 
-            sampling_strategy=1.0, 
-            voting="soft",
-
-            n_clusters=8,
-            init="k-means++",
-            n_init=1,
-            algorithm="lloyd",
-            tol=1e-4,
-
-            random_state=None
-        ) -> None:
+        self,
+        sampling_strategy=1.0,
+        voting="soft",
+        n_clusters=8,
+        init="k-means++",
+        n_init=1,
+        algorithm="lloyd",
+        tol=1e-4,
+        random_state=None,
+    ) -> None:
         self.sampling_strategy = sampling_strategy
         self.voting = voting
 
@@ -57,10 +56,9 @@ class ClusterCentroids(AutoSklearnPreprocessingAlgorithm):
                 n_init=self.n_init,
                 algorithm=self.algorithm,
                 tol=self.tol,
-                random_state=self.random_state
+                random_state=self.random_state,
             ),
-            random_state=self.random_state
-
+            random_state=self.random_state,
         ).fit_resample(X, y)
 
     @staticmethod
@@ -95,14 +93,21 @@ class ClusterCentroids(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, 1.0, log=False), 
-            CategoricalHyperparameter("voting", ["hard", "soft"], "soft"),
-
-            UniformIntegerHyperparameter("n_clusters", 2, 20, default_value=8),
-            CategoricalHyperparameter("init", ["k-means++", "random"], "k-means++"),
-            UniformIntegerHyperparameter("n_init", 1, 20, 1),
-            CategoricalHyperparameter("algorithm", ["lloyd", "elkan"], "lloyd"),
-            UniformFloatHyperparameter("tol", 1e-5, 1e-1, 1e-4, log=True),
-        ])
+        cs.add_hyperparameters(
+            [
+                UniformFloatHyperparameter(
+                    "sampling_strategy",
+                    min(0.99999, dataset_properties["imbalanced_ratio"] + 0.01),
+                    1.0,
+                    1.0,
+                    log=False,
+                ),
+                CategoricalHyperparameter("voting", ["hard", "soft"], "soft"),
+                UniformIntegerHyperparameter("n_clusters", 2, 20, default_value=8),
+                CategoricalHyperparameter("init", ["k-means++", "random"], "k-means++"),
+                UniformIntegerHyperparameter("n_init", 1, 20, 1),
+                CategoricalHyperparameter("algorithm", ["lloyd", "elkan"], "lloyd"),
+                UniformFloatHyperparameter("tol", 1e-5, 1e-1, 1e-4, log=True),
+            ]
+        )
         return cs

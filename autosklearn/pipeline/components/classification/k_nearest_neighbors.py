@@ -17,6 +17,7 @@ class KNearestNeighborsClassifier(AutoSklearnClassificationAlgorithm):
         self.weights = weights
         self.p = p
         self.random_state = random_state
+        self.estimator = None
 
     def fit(self, X, Y):
         import sklearn.multiclass

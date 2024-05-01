@@ -1,6 +1,11 @@
 from typing import Dict, Optional, Tuple, Union
+
 import imblearn.under_sampling as imblearn
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+)
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -13,15 +18,9 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter, CategoricalHyperparameter
 
 class RandomUnderSampler(AutoSklearnPreprocessingAlgorithm):
-    def __init__(
-            self, 
-            sampling_strategy=1.0, 
-            replacement=5, 
-            random_state=None
-        ) -> None:
+    def __init__(self, sampling_strategy=1.0, replacement=5, random_state=None) -> None:
         self.sampling_strategy = sampling_strategy
         self.replacement = replacement
         self.random_state = random_state
@@ -32,7 +31,7 @@ class RandomUnderSampler(AutoSklearnPreprocessingAlgorithm):
         return imblearn.RandomUnderSampler(
             sampling_strategy=self.sampling_strategy,
             replacement=self.replacement,
-            random_state=self.random_state
+            random_state=self.random_state,
         ).fit_resample(X, y)
 
     @staticmethod
@@ -67,8 +66,16 @@ class RandomUnderSampler(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False), 
-            CategoricalHyperparameter("replacement", [True, False], False)
-        ])
+        cs.add_hyperparameters(
+            [
+                UniformFloatHyperparameter(
+                    "sampling_strategy",
+                    min(0.99999, dataset_properties["imbalanced_ratio"] + 0.01),
+                    1.0,
+                    default_value=1.0,
+                    log=False,
+                ),
+                CategoricalHyperparameter("replacement", [True, False], False),
+            ]
+        )
         return cs

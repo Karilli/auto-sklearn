@@ -1,8 +1,14 @@
 from typing import Dict, Optional, Tuple, Union
+
 import imblearn.combine as imblearn
+from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+)
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import TomekLinks
-from ConfigSpace.configuration_space import ConfigurationSpace
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTYPE
@@ -15,21 +21,14 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
 )
 
-from ConfigSpace.hyperparameters import (
-    UniformFloatHyperparameter,
-    UniformIntegerHyperparameter,
-    CategoricalHyperparameter
-)
-
 
 class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
     def __init__(
-        self, 
-        smote_sampling_strategy=1.0, 
+        self,
+        smote_sampling_strategy=1.0,
         smote_k_neighbors=5,
         tomek_sampling_strategy="not minority",
-
-        random_state=None
+        random_state=None,
     ) -> None:
         self.smote_sampling_strategy = smote_sampling_strategy
         self.tomek_sampling_strategy = tomek_sampling_strategy
@@ -43,12 +42,10 @@ class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
             smote=SMOTE(
                 sampling_strategy=self.smote_sampling_strategy,
                 k_neighbors=self.smote_k_neighbors,
-                random_state=self.random_state
+                random_state=self.random_state,
             ),
-            tomek=TomekLinks(
-                sampling_strategy=self.tomek_sampling_strategy
-            ),
-            random_state=self.random_state
+            tomek=TomekLinks(sampling_strategy=self.tomek_sampling_strategy),
+            random_state=self.random_state,
         ).fit_resample(X, y)
 
     @staticmethod
@@ -83,9 +80,23 @@ class SMOTETomek(AutoSklearnPreprocessingAlgorithm):
         dataset_properties: Optional[DATASET_PROPERTIES_TYPE] = None,
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
-        cs.add_hyperparameters([
-            UniformFloatHyperparameter("smote_sampling_strategy", dataset_properties["imbalanced_ratio"] + 0.01, 1.0, default_value=1.0, log=False),  
-            UniformIntegerHyperparameter("smote_k_neighbors", 3, 10, default_value=5),
-            CategoricalHyperparameter("tomek_sampling_strategy", ["not minority", "majority", "all"], "not minority"),
-        ])
+        cs.add_hyperparameters(
+            [
+                UniformFloatHyperparameter(
+                    "smote_sampling_strategy",
+                    min(0.99999, dataset_properties["imbalanced_ratio"] + 0.01),
+                    1.0,
+                    default_value=1.0,
+                    log=False,
+                ),
+                UniformIntegerHyperparameter(
+                    "smote_k_neighbors", 3, 10, default_value=5
+                ),
+                CategoricalHyperparameter(
+                    "tomek_sampling_strategy",
+                    ["not minority", "majority", "all"],
+                    "not minority",
+                ),
+            ]
+        )
         return cs
