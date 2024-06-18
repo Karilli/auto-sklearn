@@ -16,13 +16,16 @@ git checkout SMOTE-version-6
 pip install -e ".[test,doc,examples]"
 ```
 
+
+
+# Check whether the installation was sucsseful
+
 ## Create a python script that uses auto-sklearn with SMOTE
 ```bash
 cd ..
 touch example.py
 ```
 
-# Check whether the installation was sucsseful
 ## Copy-paste the following code into example.py
 
 ```Python3
