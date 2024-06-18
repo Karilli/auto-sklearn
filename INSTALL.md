@@ -1,21 +1,29 @@
- ```bash
+# create new project and virtual environment
+```bash
 mkdir new-project
 cd new-project
 python3 -m venv auto-sklearn-venv
 source auto-sklearn-venv/bin/activate
+```
 
+# Install auto-skleanr with SMOTE
+```bash
 git clone --recurse-submodules https://github.com/Karilli/auto-sklearn.git
 cd auto-sklearn
 git checkout SMOTE-version-6
 pip install -e ".[test,doc,examples]"
+```
 
+# Create a python script that uses auto-sklearn with SMOTE
+# 
+```bash
 cd ..
 touch example.py
+```
 
-python3 example.py
- ```
+# Copy-paste the following code into example.py
 
- ```Python3
+```Python3
 import sklearn.datasets
 
 import sys
@@ -35,4 +43,11 @@ automl = AutoSklearnClassifier(
 ).fit(X_train, y_train, dataset_name="breast_cancer")
 
 print(automl.show_models())
- ```
+```
+
+# Run the script, you should see SVMSMOTE in all balancing steps
+```bash
+python3 example.py
+```
+
+
