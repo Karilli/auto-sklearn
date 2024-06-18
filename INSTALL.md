@@ -18,7 +18,7 @@ pip install -e ".[test,doc,examples]"
 
 
 
-# Check whether the installation was sucsseful
+# Check whether the installation was successful
 
 ## Create a python script that uses auto-sklearn with SMOTE
 ```bash
