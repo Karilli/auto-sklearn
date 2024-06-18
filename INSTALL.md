@@ -1,4 +1,4 @@
-# create new project and virtual environment
+# Create new project and virtual environment
 ```bash
 mkdir new-project
 cd new-project
@@ -6,7 +6,7 @@ python3 -m venv auto-sklearn-venv
 source auto-sklearn-venv/bin/activate
 ```
 
-# Install auto-skleanr with SMOTE
+# Install auto-sklearn with SMOTE
 ```bash
 git clone --recurse-submodules https://github.com/Karilli/auto-sklearn.git
 cd auto-sklearn
