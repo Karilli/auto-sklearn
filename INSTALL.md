@@ -1,6 +1,6 @@
-## Install
+# Install
 
-# Create new project and virtual environment
+## Create new project and virtual environment
 ```bash
 mkdir new-project
 cd new-project
@@ -8,7 +8,7 @@ python3 -m venv auto-sklearn-venv
 source auto-sklearn-venv/bin/activate
 ```
 
-# Install auto-sklearn with SMOTE
+## Install auto-sklearn with SMOTE
 ```bash
 git clone --recurse-submodules https://github.com/Karilli/auto-sklearn.git
 cd auto-sklearn
@@ -16,14 +16,14 @@ git checkout SMOTE-version-6
 pip install -e ".[test,doc,examples]"
 ```
 
-# Create a python script that uses auto-sklearn with SMOTE
+## Create a python script that uses auto-sklearn with SMOTE
 ```bash
 cd ..
 touch example.py
 ```
 
-## Check whether the installation was sucsseful
-Copy-paste the following code into example.py
+# Check whether the installation was sucsseful
+## Copy-paste the following code into example.py
 
 ```Python3
 import sklearn.datasets
@@ -47,7 +47,7 @@ automl = AutoSklearnClassifier(
 print(automl.show_models())
 ```
 
-# Run the script, you should see SVMSMOTE in all balancing steps
+## Run the script, you should see SVMSMOTE in all balancing steps
 ```bash
 python3 example.py
 ```
