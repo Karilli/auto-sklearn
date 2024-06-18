@@ -26,15 +26,12 @@ touch example.py
 ## Copy-paste the following code into example.py
 
 ```Python3
-import sklearn.datasets
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from autosklearn.classification import AutoSklearnClassifier
 
-import sys
-# modify this to path corresponding to ./auto-sklearn/autosklearn
-sys.path.insert(0, "./path/to/auto-sklearn/autosklearn")
-from autosklearn import AutoSklearnClassifier
-
-X, y = sklearn.datasets.load_breast_cancer(return_X_y=True)
-X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
+X, y = load_breast_cancer(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(
     X, y, random_state=1
 )
 
