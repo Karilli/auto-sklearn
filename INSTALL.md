@@ -1,3 +1,5 @@
+## Install
+
 # Create new project and virtual environment
 ```bash
 mkdir new-project
@@ -15,13 +17,13 @@ pip install -e ".[test,doc,examples]"
 ```
 
 # Create a python script that uses auto-sklearn with SMOTE
-# 
 ```bash
 cd ..
 touch example.py
 ```
 
-# Copy-paste the following code into example.py
+## Check whether the installation was sucsseful
+Copy-paste the following code into example.py
 
 ```Python3
 import sklearn.datasets
