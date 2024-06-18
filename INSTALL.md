@@ -38,7 +38,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 automl = AutoSklearnClassifier(
     time_left_for_this_task=120,
     include={"balancing": ["SVMSMOTE"]},
-    per_run_time_limit=30
+    per_run_time_limit=30,
+    initial_configurations_via_metaleraning=0,
 ).fit(X_train, y_train, dataset_name="breast_cancer")
 
 print(automl.show_models())
